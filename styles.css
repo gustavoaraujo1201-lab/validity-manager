@@ -157,7 +157,7 @@ html, body {
 .topo-icone { font-size: 1.25rem; flex-shrink: 0; }
 
 .topo-titulo {
-    font-size: 1rem;
+    font-size: 1.4rem;
     font-weight: 700;
     line-height: 1;
     color: var(--text-primary);
@@ -875,7 +875,7 @@ select:focus {
     .topo-inner { flex-wrap: wrap; gap: 0.4rem; padding: 0.5rem 1rem; height: auto; }
     .abas       { width: 100%; order: 3; }
     .aba        { flex: 1; justify-content: center; }
-    .topo-titulo { font-size: 0.88rem; }
+    .topo-titulo { font-size: 1.1rem; }
 
     .resumo-global { grid-template-columns: 1fr 1fr; }
     .campo-grupo.dois { grid-template-columns: 1fr; }
