@@ -34,11 +34,11 @@ let sessaoAtual = null;
 
 function verificarSessao() {
     const raw = sessionStorage.getItem('cv_sessao');
-    if (!raw) { window.location.href = 'login.html'; return; }
+    if (!raw) { window.location.href = '/login'; return; }
     sessaoAtual = JSON.parse(raw);
 
     // Exibe nome no topo
-    document.getElementById('topo-nome-usuario').textContent = '👤 ' + sessaoAtual.usuario;
+    document.getElementById('topo-nome-usuario').textContent = '👤 ' + sessaoAtual.nome;
 
     // Mostra aba Usuários só para admin
     if (sessaoAtual.perfil === 'admin') {
@@ -62,7 +62,7 @@ function aplicarPermissoes() {
 function fazerLogout() {
     if (!confirm('Deseja sair do sistema?')) return;
     sessionStorage.removeItem('cv_sessao');
-    window.location.href = 'login.html';
+    window.location.href = '/login';
 }
 
 function isAdmin() {
@@ -112,7 +112,7 @@ function renderizarTabelaUsuarios() {
 
         html += `
             <div class="usuario-item ${euMesmo ? 'eu' : ''}">
-                <div><strong>${u.usuario}</strong>${badgeEu}</div>
+                <div><strong>${u.nome}</strong>${badgeEu}</div>
                 <div style="color:#6b7280;font-size:0.82rem">${u.usuario}</div>
                 <div>${badgePerfil}</div>
                 <div><span style="color:#16a34a;font-size:0.78rem;font-weight:600">● Ativo</span></div>
@@ -128,6 +128,7 @@ function abrirModalUsuario(id) {
     const overlay = document.getElementById('overlay-modal-usuario');
     const modal   = document.getElementById('modal-usuario');
 
+    document.getElementById('mu-nome').value    = '';
     document.getElementById('mu-usuario').value = '';
     document.getElementById('mu-senha').value   = '';
     document.getElementById('mu-perfil').value  = 'colaborador';
@@ -137,6 +138,7 @@ function abrirModalUsuario(id) {
         const u = usuarios.find(x => x.id === id);
         if (u) {
             document.getElementById('modal-usuario-titulo').textContent = 'Editar usuário';
+            document.getElementById('mu-nome').value   = u.nome;
             document.getElementById('mu-usuario').value = u.usuario;
             document.getElementById('mu-perfil').value  = u.perfil;
             document.getElementById('mu-senha').placeholder = 'Deixe em branco para não alterar';
@@ -157,16 +159,15 @@ function fecharModalUsuario() {
     idEditandoUsuario = null;
 }
 
-function capitalizarPalavras(str) {
-    return str.replace(/\b\w/g, c => c.toUpperCase());
-}
-
 function salvarUsuario() {
-    const usuario = capitalizarPalavras(document.getElementById('mu-usuario').value.trim());
+    const nome    = document.getElementById('mu-nome').value.trim();
+    const usuario = document.getElementById('mu-usuario').value.trim().toLowerCase();
     const senha   = document.getElementById('mu-senha').value;
     const perfil  = document.getElementById('mu-perfil').value;
 
+    if (!nome)    { alert('⚠️ Informe o nome completo!'); return; }
     if (!usuario) { alert('⚠️ Informe o usuário de login!'); return; }
+    if (!/^[a-z0-9._]+$/.test(usuario)) { alert('⚠️ Usuário só pode ter letras, números, ponto e underline.'); return; }
 
     let usuarios = carregarUsuarios();
 
@@ -177,6 +178,7 @@ function salvarUsuario() {
     if (idEditandoUsuario) {
         const idx = usuarios.findIndex(u => u.id === idEditandoUsuario);
         if (idx !== -1) {
+            usuarios[idx].nome    = nome;
             usuarios[idx].usuario = usuario;
             usuarios[idx].perfil  = perfil;
             if (senha) {
@@ -187,7 +189,7 @@ function salvarUsuario() {
     } else {
         if (!senha || senha.length < 4) { alert('⚠️ Defina uma senha com pelo menos 4 caracteres!'); return; }
         const novoId = Date.now();
-        usuarios.push({ id: novoId, usuario, senha, perfil });
+        usuarios.push({ id: novoId, nome, usuario, senha, perfil });
     }
 
     salvarUsuarios(usuarios);
