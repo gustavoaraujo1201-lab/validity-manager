@@ -157,13 +157,16 @@ function fecharModalUsuario() {
     idEditandoUsuario = null;
 }
 
+function capitalizarPalavras(str) {
+    return str.replace(/\b\w/g, c => c.toUpperCase());
+}
+
 function salvarUsuario() {
-    const usuario = document.getElementById('mu-usuario').value.trim().toLowerCase();
+    const usuario = capitalizarPalavras(document.getElementById('mu-usuario').value.trim());
     const senha   = document.getElementById('mu-senha').value;
     const perfil  = document.getElementById('mu-perfil').value;
 
     if (!usuario) { alert('⚠️ Informe o usuário de login!'); return; }
-    if (!/^[a-z0-9._]+$/.test(usuario)) { alert('⚠️ Usuário só pode ter letras, números, ponto e underline.'); return; }
 
     let usuarios = carregarUsuarios();
 
