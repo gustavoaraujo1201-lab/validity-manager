@@ -37,6 +37,9 @@ function verificarSessao() {
     if (!raw) { window.location.href = '/login'; return; }
     sessaoAtual = JSON.parse(raw);
 
+    // Sessão válida — revela a página
+    document.body.style.visibility = 'visible';
+
     // Exibe nome no topo
     document.getElementById('topo-nome-usuario').textContent = '👤 ' + sessaoAtual.nome;
 
