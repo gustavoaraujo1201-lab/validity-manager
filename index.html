@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Controle de Validade</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <header class="topo">
+        <div class="topo-inner">
+            <div class="topo-marca">
+                <span class="topo-icone">📦</span>
+                <h1 class="topo-titulo">Controle de Validade</h1>
+            </div>
+            <nav class="abas">
+                <button class="aba ativa" id="aba-cadastro" onclick="mudarAba('cadastro')">
+                    <span class="aba-icone">➕</span>
+                    <span>Cadastro</span>
+                </button>
+                <button class="aba" id="aba-categorias" onclick="mudarAba('categorias')">
+                    <span class="aba-icone">📂</span>
+                    <span>Categorias</span>
+                </button>
+                <button class="aba aba-admin escondido" id="aba-usuarios" onclick="mudarAba('usuarios')">
+                    <span class="aba-icone">👥</span>
+                    <span>Usuários</span>
+                </button>
+            </nav>
+            <div class="topo-usuario">
+                <span class="topo-nome-usuario" id="topo-nome-usuario"></span>
+                <button class="btn-tema-topo" onclick="alterarTema()" id="btn-tema-topo">
+                    <span id="tema-icone-topo">🌙</span>
+                    <span>Alterar tema</span>
+                </button>
+                <button class="btn-logout" onclick="fazerLogout()" title="Sair">⎋ Sair</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- SEÇÃO 1: CADASTRO -->
+    <section id="secao-cadastro" class="secao ativa">
+        <div class="secao-inner">
+
+            <div class="secao-titulo">
+                <h2>Cadastrar Produto</h2>
+                <p>Selecione a categoria e preencha os dados do produto</p>
+            </div>
+
+            <div class="card-form">
+                <div class="campo-grupo full">
+                    <label for="select-categoria">🗂️ Categoria</label>
+                    <div class="select-wrapper">
+                        <select id="select-categoria">
+                            <option value="">— Selecione uma categoria —</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="divisor"></div>
+
+                <div class="campo-grupo full">
+                    <label for="input-codigo">🔲 Código de barras</label>
+                    <input type="text" id="input-codigo"
+                           placeholder="Bipe ou digite o código..."
+                           autocomplete="off">
+                </div>
+
+                <div class="campo-grupo dois">
+                    <div>
+                        <label for="input-nome">🏷️ Nome do produto</label>
+                        <input type="text" id="input-nome"
+                               placeholder="Ex: NAN Comfor 2 800g">
+                    </div>
+                    <div>
+                        <label for="input-validade">📅 Data de validade</label>
+                        <input type="date" id="input-validade">
+                    </div>
+                </div>
+
+                <div class="form-acoes">
+                    <button class="btn-principal" id="btn-cadastrar" onclick="salvarProduto()">
+                        ✅ Cadastrar produto
+                    </button>
+                    <button class="btn-cancelar" id="btn-cancelar" onclick="cancelarEdicao()">
+                        ✕ Cancelar edição
+                    </button>
+                </div>
+
+                <div id="banner-editando" class="banner-editando escondido">
+                    ✏️ Você está editando um produto. Faça as alterações e clique em <strong>Salvar alterações</strong>.
+                </div>
+            </div>
+
+            <div class="resumo-global">
+                <div class="stat-card">
+                    <p class="stat-label">Total de produtos</p>
+                    <p class="stat-valor" id="g-total">0</p>
+                </div>
+                <div class="stat-card">
+                    <p class="stat-label">Próximos ao venc.</p>
+                    <p class="stat-valor aviso" id="g-aviso">0</p>
+                </div>
+                <div class="stat-card">
+                    <p class="stat-label">Vencidos</p>
+                    <p class="stat-valor vencido" id="g-vencidos">0</p>
+                </div>
+                <div class="stat-card">
+                    <p class="stat-label">Categorias</p>
+                    <p class="stat-valor" id="g-cats">0</p>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- SEÇÃO 2: CATEGORIAS -->
+    <section id="secao-categorias" class="secao">
+        <div class="secao-inner">
+
+            <div class="secao-titulo-row">
+                <div>
+                    <h2>Categorias</h2>
+                    <p>Clique em uma categoria para ver os produtos cadastrados</p>
+                </div>
+                <button class="btn-nova-categoria" onclick="abrirModalCategoria()">
+                    + Nova categoria
+                </button>
+            </div>
+
+            <div id="grid-categorias" class="grid-categorias">
+                <div class="cat-vazia">Nenhuma categoria criada ainda.</div>
+            </div>
+
+            <!-- Painel de produtos da categoria -->
+            <div id="painel-produtos" class="painel-produtos escondido">
+                <div class="painel-header">
+                    <button class="btn-voltar" onclick="fecharPainel()">← Voltar</button>
+                    <div class="painel-header-info">
+                        <h3 id="painel-titulo">Categoria</h3>
+                        <span id="painel-contador" class="badge-contador">0 produtos</span>
+                    </div>
+                    <div class="painel-resumo">
+                        <span class="mini-stat">Total: <strong id="p-total">0</strong></span>
+                        <span class="mini-stat aviso">Aviso: <strong id="p-aviso">0</strong></span>
+                        <span class="mini-stat vencido">Vencidos: <strong id="p-vencidos">0</strong></span>
+                    </div>
+                    <div class="painel-acoes-export">
+                        <button class="btn-exportar" onclick="exportarExcel('categoria')" title="Exportar para Excel">
+                            📊 Exportar
+                        </button>
+                    </div>
+                </div>
+                <div class="card">
+                    <!-- Legenda das faixas de alerta -->
+                    <div class="legenda-faixas">
+                        <span class="legenda-item"><span class="legenda-dot" style="background:#16a34a"></span> &gt;12 meses</span>
+                        <span class="legenda-item"><span class="legenda-dot" style="background:#2563eb"></span> 9–12 meses</span>
+                        <span class="legenda-item"><span class="legenda-dot" style="background:#ca8a04"></span> 6–9 meses</span>
+                        <span class="legenda-item"><span class="legenda-dot" style="background:#ea580c"></span> 3–6 meses</span>
+                        <span class="legenda-item"><span class="legenda-dot" style="background:#dc2626"></span> &lt;3 meses</span>
+                    </div>
+                    <div id="lista-produtos">
+                        <p class="lista-vazia">Nenhum produto nesta categoria ainda.</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- SEÇÃO 3: USUÁRIOS (admin only) -->
+    <section id="secao-usuarios" class="secao">
+        <div class="secao-inner">
+            <div class="secao-titulo-row">
+                <div>
+                    <h2>Gerenciar Usuários</h2>
+                    <p>Crie e gerencie os colaboradores com acesso ao sistema</p>
+                </div>
+                <button class="btn-nova-categoria" onclick="abrirModalUsuario()">+ Novo usuário</button>
+            </div>
+
+            <div id="tabela-usuarios" class="card">
+                <p class="lista-vazia">Carregando...</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- MODAL categoria -->
+    <div id="overlay-modal" class="overlay-modal escondido" onclick="fecharModalCategoria()"></div>
+    <div id="modal-categoria" class="modal escondido">
+        <h3 id="modal-titulo">Nova categoria</h3>
+        <p id="modal-descricao" class="modal-descricao">
+            Digite o nome da categoria. Ex: Leites, Suplementos, Medicamentos OTC...
+        </p>
+        <label for="input-categoria-nome">Nome da categoria</label>
+        <input type="text" id="input-categoria-nome"
+               placeholder="Ex: Leites Infantis"
+               maxlength="30">
+
+        <div id="campo-atribuir-colaborador">
+            <label for="select-cat-colaborador" style="margin-top:0.75rem">👤 Atribuir ao colaborador</label>
+            <div class="select-wrapper" style="margin-bottom:0">
+                <select id="select-cat-colaborador">
+                    <option value="">— Selecione um colaborador —</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="modal-acoes" style="margin-top:1rem">
+            <button class="btn-modal-cancelar" onclick="fecharModalCategoria()">Cancelar</button>
+            <button class="btn-modal-salvar"   onclick="salvarCategoria()">Salvar</button>
+        </div>
+    </div>
+
+    <!-- MODAL usuário -->
+    <div id="overlay-modal-usuario" class="overlay-modal escondido" onclick="fecharModalUsuario()"></div>
+    <div id="modal-usuario" class="modal escondido">
+        <h3 id="modal-usuario-titulo">Novo usuário</h3>
+        <p class="modal-descricao">Preencha os dados do colaborador.</p>
+
+        <label for="mu-nome">Nome completo</label>
+        <input type="text" id="mu-nome" placeholder="Ex: João Silva" maxlength="40">
+
+        <label for="mu-usuario">Usuário (login)</label>
+        <input type="text" id="mu-usuario" placeholder="Ex: joao.silva" maxlength="20" autocomplete="off">
+
+        <label for="mu-senha">Senha</label>
+        <input type="password" id="mu-senha" placeholder="Mínimo 4 caracteres" maxlength="30">
+
+        <label for="mu-perfil">Perfil</label>
+        <div class="select-wrapper" style="margin-bottom:1rem">
+            <select id="mu-perfil">
+                <option value="colaborador">Colaborador</option>
+                <option value="admin">Administrador</option>
+            </select>
+        </div>
+
+        <div class="modal-acoes">
+            <button class="btn-modal-cancelar" onclick="fecharModalUsuario()">Cancelar</button>
+            <button class="btn-modal-salvar" onclick="salvarUsuario()">Salvar</button>
+        </div>
+    </div>
+
+    <!-- MODAL reset de senha -->
+    <div id="overlay-modal-reset" class="overlay-modal escondido" onclick="fecharModalReset()"></div>
+    <div id="modal-reset" class="modal escondido">
+        <h3>🔑 Redefinir senha</h3>
+        <p class="modal-descricao">Defina uma nova senha para o colaborador.</p>
+        <div class="reset-info-usuario" id="reset-info-usuario">
+            <span>👤</span>
+            <span id="reset-descricao">—</span>
+        </div>
+        <div class="reset-campo">
+            <label for="reset-nova-senha">Nova senha</label>
+            <input type="password" id="reset-nova-senha" placeholder="Mínimo 4 caracteres" maxlength="30">
+        </div>
+        <div class="reset-campo">
+            <label for="reset-confirmar-senha">Confirmar senha</label>
+            <input type="password" id="reset-confirmar-senha" placeholder="Repita a nova senha" maxlength="30">
+        </div>
+        <div id="reset-msg-erro" class="reset-msg-erro escondido"></div>
+        <div class="modal-acoes">
+            <button class="btn-modal-cancelar" onclick="fecharModalReset()">Cancelar</button>
+            <button class="btn-modal-salvar btn-reset-salvar" onclick="confirmarReset()">Redefinir senha</button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

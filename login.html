@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login — Controle de Validade</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #020b1a;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        #canvas-estrelas {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .login-card {
+            position: relative;
+            z-index: 1;
+            background: rgba(255, 255, 255, 0.07);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            border-radius: 20px;
+            padding: 2.5rem 2rem;
+            width: 100%;
+            max-width: 380px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255,255,255,0.1);
+        }
+        .login-logo {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .login-logo .icone { font-size: 2.8rem; display: block; margin-bottom: 0.5rem; }
+        .login-logo h1 { font-size: 1.4rem; font-weight: 700; color: #ffffff; }
+        .login-logo p  { font-size: 0.78rem; color: rgba(255,255,255,0.5); margin-top: 2px; }
+
+        .campo { margin-bottom: 1rem; }
+        .campo label {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: rgba(255,255,255,0.75);
+            margin-bottom: 5px;
+        }
+        .campo input {
+            width: 100%;
+            padding: 11px 14px;
+            border: 1.5px solid rgba(255,255,255,0.18);
+            border-radius: 10px;
+            font-size: 0.95rem;
+            outline: none;
+            background: rgba(255,255,255,0.08);
+            color: #ffffff;
+            transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+        }
+        .campo input::placeholder { color: rgba(255,255,255,0.35); }
+        .campo input:focus {
+            border-color: rgba(88,166,255,0.7);
+            background: rgba(255,255,255,0.13);
+            box-shadow: 0 0 0 3px rgba(88,166,255,0.18);
+        }
+        .campo input.erro {
+            border-color: rgba(248,113,113,0.7);
+            box-shadow: 0 0 0 3px rgba(248,113,113,0.15);
+        }
+
+        .btn-entrar {
+            width: 100%;
+            padding: 12px;
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 0.5rem;
+            transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
+            box-shadow: 0 4px 20px rgba(37,99,235,0.45);
+        }
+        .btn-entrar:hover  { background: #1d4ed8; box-shadow: 0 4px 24px rgba(37,99,235,0.6); }
+        .btn-entrar:active { transform: scale(0.98); }
+
+        .msg-erro {
+            background: rgba(220,38,38,0.2);
+            color: #fca5a5;
+            border: 1px solid rgba(220,38,38,0.35);
+            border-radius: 8px;
+            padding: 9px 12px;
+            font-size: 0.82rem;
+            font-weight: 500;
+            margin-bottom: 1rem;
+            display: none;
+        }
+        .msg-erro.visivel { display: block; }
+
+        .rodape-login {
+            text-align: center;
+            margin-top: 1.5rem;
+            font-size: 0.72rem;
+            color: rgba(255,255,255,0.25);
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas-estrelas"></canvas>
+    <div class="login-card">
+        <div class="login-logo">
+            <span class="icone">📦</span>
+            <h1>Controle de Validade</h1>
+            <p>Faça login para continuar</p>
+        </div>
+
+        <div class="msg-erro" id="msg-erro">❌ Usuário ou senha incorretos.</div>
+
+        <div class="campo">
+            <label for="l-usuario">Usuário</label>
+            <input type="text" id="l-usuario" placeholder="Digite seu usuário" autocomplete="off">
+        </div>
+        <div class="campo">
+            <label for="l-senha">Senha</label>
+            <input type="password" id="l-senha" placeholder="Digite sua senha">
+        </div>
+
+        <button class="btn-entrar" onclick="fazerLogin()">Entrar</button>
+
+        <p class="rodape-login">Controle de Validade &copy; 2026</p>
+    </div>
+
+    <script>
+        // ===== ANIMAÇÃO CÉU ESTRELADO =====
+        (function() {
+            const canvas = document.getElementById('canvas-estrelas');
+            const ctx = canvas.getContext('2d');
+
+            let W, H;
+            function resize() {
+                W = canvas.width  = window.innerWidth;
+                H = canvas.height = window.innerHeight;
+            }
+            resize();
+            window.addEventListener('resize', resize);
+
+            const NUM_FIXAS = 220;
+            const estrelasFix = Array.from({ length: NUM_FIXAS }, () => ({
+                x: Math.random(),
+                y: Math.random(),
+                r: Math.random() * 1.4 + 0.3,
+                alpha: Math.random() * 0.6 + 0.3,
+                twinkleSpeed: Math.random() * 0.02 + 0.005,
+                twinkleDir: Math.random() > 0.5 ? 1 : -1,
+            }));
+
+            const NUM_CADENTES = 6;
+            function novaCadente() {
+                const angle = (Math.random() * 20 + 15) * Math.PI / 180;
+                const speed = Math.random() * 7 + 5;
+                return {
+                    x: Math.random() * W,
+                    y: Math.random() * H * 0.5,
+                    len: Math.random() * 180 + 80,
+                    speed,
+                    vx: Math.cos(angle) * speed,
+                    vy: Math.sin(angle) * speed,
+                    alpha: 0,
+                    fadeIn: true,
+                    trail: [],
+                    maxTrail: Math.floor(Math.random() * 18 + 12),
+                    delay: Math.random() * 180,
+                    active: false,
+                };
+            }
+
+            let cadentes = Array.from({ length: NUM_CADENTES }, novaCadente);
+
+            function drawFixas() {
+                estrelasFix.forEach(s => {
+                    s.alpha += s.twinkleSpeed * s.twinkleDir;
+                    if (s.alpha >= 0.9 || s.alpha <= 0.1) s.twinkleDir *= -1;
+                    ctx.beginPath();
+                    ctx.arc(s.x * W, s.y * H, s.r, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(255,255,255,${s.alpha})`;
+                    ctx.fill();
+                });
+            }
+
+            function drawCadentes() {
+                cadentes.forEach((c, i) => {
+                    if (c.delay > 0) { c.delay--; return; }
+                    c.active = true;
+                    c.trail.unshift({ x: c.x, y: c.y });
+                    if (c.trail.length > c.maxTrail) c.trail.pop();
+                    if (c.fadeIn) {
+                        c.alpha = Math.min(c.alpha + 0.06, 1);
+                        if (c.alpha >= 1) c.fadeIn = false;
+                    }
+                    c.trail.forEach((pt, idx) => {
+                        const ratio = 1 - idx / c.trail.length;
+                        const a = c.alpha * ratio * ratio;
+                        const r = 1.5 * ratio;
+                        ctx.beginPath();
+                        ctx.arc(pt.x, pt.y, r, 0, Math.PI * 2);
+                        ctx.fillStyle = `rgba(${Math.round(200 + 55*ratio)},${Math.round(220 + 35*ratio)},255,${a})`;
+                        ctx.fill();
+                    });
+                    const grad = ctx.createRadialGradient(c.x, c.y, 0, c.x, c.y, 6);
+                    grad.addColorStop(0, `rgba(255,255,255,${c.alpha})`);
+                    grad.addColorStop(1, 'rgba(100,180,255,0)');
+                    ctx.beginPath();
+                    ctx.arc(c.x, c.y, 6, 0, Math.PI * 2);
+                    ctx.fillStyle = grad;
+                    ctx.fill();
+                    c.x += c.vx;
+                    c.y += c.vy;
+                    if (c.x > W + 50 || c.y > H + 50) {
+                        cadentes[i] = novaCadente();
+                        cadentes[i].delay = Math.random() * 120 + 30;
+                    }
+                });
+            }
+
+            function loop() {
+                ctx.clearRect(0, 0, W, H);
+                const bg = ctx.createLinearGradient(0, 0, W, H);
+                bg.addColorStop(0, '#020b1a');
+                bg.addColorStop(0.5, '#061630');
+                bg.addColorStop(1, '#0a1f45');
+                ctx.fillStyle = bg;
+                ctx.fillRect(0, 0, W, H);
+                drawFixas();
+                drawCadentes();
+                requestAnimationFrame(loop);
+            }
+            loop();
+        })();
+
+        // ===== USUÁRIOS PADRÃO =====
+        function inicializarUsuarios() {
+            let usuarios = JSON.parse(localStorage.getItem('cv_usuarios') || '[]');
+            const idxAdmin = usuarios.findIndex(u => u.id === 1);
+            const adminPadrao = { id: 1, usuario: '98', senha: '1220', nome: 'Gustavo', perfil: 'admin' };
+            if (idxAdmin === -1) {
+                usuarios.unshift(adminPadrao);
+            } else {
+                usuarios[idxAdmin] = adminPadrao;
+            }
+            localStorage.setItem('cv_usuarios', JSON.stringify(usuarios));
+        }
+
+        function fazerLogin() {
+            const usuario = document.getElementById('l-usuario').value.trim();
+            const senha   = document.getElementById('l-senha').value;
+            const erro    = document.getElementById('msg-erro');
+            const uInput  = document.getElementById('l-usuario');
+            const sInput  = document.getElementById('l-senha');
+
+            erro.classList.remove('visivel');
+            uInput.classList.remove('erro');
+            sInput.classList.remove('erro');
+
+            if (!usuario || !senha) {
+                erro.textContent = '⚠️ Preencha usuário e senha.';
+                erro.classList.add('visivel');
+                return;
+            }
+
+            const usuarios = JSON.parse(localStorage.getItem('cv_usuarios') || '[]');
+            const encontrado = usuarios.find(u => u.usuario === usuario && u.senha === senha);
+
+            if (!encontrado) {
+                erro.textContent = '❌ Usuário ou senha incorretos.';
+                erro.classList.add('visivel');
+                uInput.classList.add('erro');
+                sInput.classList.add('erro');
+                sInput.value = '';
+                return;
+            }
+
+            sessionStorage.setItem('cv_sessao', JSON.stringify({
+                id: encontrado.id,
+                nome: encontrado.nome,
+                usuario: encontrado.usuario,
+                perfil: encontrado.perfil
+            }));
+
+            window.location.href = 'index.html';
+        }
+
+        document.getElementById('l-usuario').addEventListener('keydown', e => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                document.getElementById('l-senha').focus();
+            }
+        });
+
+        document.getElementById('l-senha').addEventListener('keydown', e => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                fazerLogin();
+            }
+        });
+
+        inicializarUsuarios();
+
+        if (sessionStorage.getItem('cv_sessao')) {
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+</html>
