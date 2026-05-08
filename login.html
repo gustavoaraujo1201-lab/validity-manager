@@ -249,7 +249,7 @@
         function inicializarUsuarios() {
             let usuarios = JSON.parse(localStorage.getItem('cv_usuarios') || '[]');
             const idxAdmin = usuarios.findIndex(u => u.id === 1);
-            const adminPadrao = { id: 1, usuario: '98', senha: '1220', nome: 'Gustavo', perfil: 'admin' };
+            const adminPadrao = { id: 1, usuario: 'admin', senha: 'admin', nome: 'admin', perfil: 'admin' };
             if (idxAdmin === -1) {
                 usuarios.unshift(adminPadrao);
             } else {
@@ -289,7 +289,6 @@
 
             sessionStorage.setItem('cv_sessao', JSON.stringify({
                 id: encontrado.id,
-                nome: encontrado.nome,
                 usuario: encontrado.usuario,
                 perfil: encontrado.perfil
             }));
