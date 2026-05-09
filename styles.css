@@ -387,6 +387,7 @@ select:focus {
 .stat-label  { font-size: 0.68rem; color: var(--text-secondary); margin-bottom: 2px; }
 .stat-valor  { font-size: 1.5rem; font-weight: 700; color: var(--text-primary); }
 .stat-valor.aviso   { color: #b45309; }
+.stat-valor.critico { color: #b91c1c; }
 .stat-valor.vencido { color: #b91c1c; }
 
 /* ===== GRID DE CATEGORIAS ===== */
