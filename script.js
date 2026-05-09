@@ -502,8 +502,8 @@ function renderizarListaPainel() {
     // Atualiza painel resumo: mostra urgentes
     const urgentes = contadores.critico + contadores.alerta + contadores.vencido;
     document.getElementById('p-total').textContent    = lista.length;
-    document.getElementById('p-aviso').textContent    = contadores.critico + contadores.alerta + contadores.atencao;
-    document.getElementById('p-vencidos').textContent = contadores.vencido;
+    document.getElementById('p-aviso').textContent    = contadores.critico;
+    document.getElementById('p-vencidos').textContent = contadores.alerta;
     atualizarResumoGlobal();
 }
 
@@ -717,20 +717,20 @@ function excluirCategoria(id) {
 
 // ===== RESUMO GLOBAL =====
 function atualizarResumoGlobal() {
-    let total = 0, atencao = 0, vencidos = 0;
+    let total = 0, prox3 = 0, prox6 = 0;
     const minhascats = categoriasDeSessao();
     minhascats.forEach(cat => {
         (produtos[cat.id] || []).forEach(p => {
             total++;
-            const f = calcularFaixa(p.validade);
-            if (f === 'vencido') vencidos++;
-            if (f === 'critico' || f === 'alerta' || f === 'atencao') atencao++;
+            const dias = diasParaVencer(p.validade);
+            if (dias >= 0 && dias <= 90)  prox3++;  // até 3 meses
+            if (dias > 90 && dias <= 180) prox6++;  // entre 3 e 6 meses
         });
     });
-    document.getElementById('g-total').textContent    = total;
-    document.getElementById('g-aviso').textContent    = atencao;
-    document.getElementById('g-vencidos').textContent = vencidos;
-    document.getElementById('g-cats').textContent     = categoriasDeSessao().length;
+    document.getElementById('g-total').textContent  = total;
+    document.getElementById('g-prox3').textContent  = prox3;
+    document.getElementById('g-prox6').textContent  = prox6;
+    document.getElementById('g-cats').textContent   = categoriasDeSessao().length;
     atualizarBadgeAbaCategorias();
 }
 
