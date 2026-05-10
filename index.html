@@ -340,7 +340,7 @@
         // ===== CADASTRO DE UNIDADES =====
         let idEditandoUnidade = null;
 
-        function carregarUnidades() {
+        function renderizarUnidades() {
             const unidades = JSON.parse(localStorage.getItem('cv_unidades') || '[]');
             const lista = document.getElementById('lista-unidades');
             if (!lista) return;
@@ -403,7 +403,7 @@
 
             localStorage.setItem('cv_unidades', JSON.stringify(unidades));
             fecharModalUnidade();
-            carregarUnidades();
+            renderizarUnidades();
         }
 
         function excluirUnidade(idx) {
@@ -411,14 +411,14 @@
             const unidades = JSON.parse(localStorage.getItem('cv_unidades') || '[]');
             unidades.splice(idx, 1);
             localStorage.setItem('cv_unidades', JSON.stringify(unidades));
-            carregarUnidades();
+            renderizarUnidades();
         }
 
         document.addEventListener('DOMContentLoaded', function () {
             const btnUnidade = document.getElementById('aba-unidade');
             if (btnUnidade) {
                 btnUnidade.addEventListener('click', function () {
-                    setTimeout(carregarUnidades, 50);
+                    setTimeout(renderizarUnidades, 50);
                 });
             }
         });
