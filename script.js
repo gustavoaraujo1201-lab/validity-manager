@@ -1042,6 +1042,7 @@ function exportarExcel(modo, catIdDirecto, idsSelecao) {
                 'Cód. Barras':    p.codigo,
                 'Produto':        p.nome,
                 'Validade':       formatarData(p.validade),
+                'Quantidade':     p.quantidade || 1,
                 'Dias Restantes': diasParaVencer(p.validade),
                 'Status':         FAIXA_LABEL[calcularFaixa(p.validade)] || '',
             }));
