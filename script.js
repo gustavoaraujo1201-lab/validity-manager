@@ -587,7 +587,7 @@ function renderizarListaPainel() {
     // Atualiza painel resumo
     document.getElementById('p-total').textContent    = lista.length;
     document.getElementById('p-aviso').textContent    = contadores.critico;
-    document.getElementById('p-vencidos').textContent = contadores.alerta;
+    document.getElementById('p-vencidos').textContent = contadores.alerta + contadores.atencao;
     atualizarResumoGlobal();
 }
 
@@ -813,7 +813,7 @@ function atualizarResumoGlobal() {
             total++;
             const dias = diasParaVencer(p.validade);
             if (dias >= 0 && dias <= 90)  prox3++;  // até 3 meses
-            if (dias > 90 && dias <= 180) prox6++;  // entre 3 e 6 meses
+            if (dias > 90 && dias <= 270) prox6++;  // entre 3 e 9 meses
         });
     });
     document.getElementById('g-total').textContent  = total;
