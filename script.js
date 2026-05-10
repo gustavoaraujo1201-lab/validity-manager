@@ -1132,6 +1132,17 @@ document.addEventListener('DOMContentLoaded', function() {
     if (_inputCodigo)   _inputCodigo.addEventListener('keydown',   e => { if (e.key === 'Enter') _inputNome.focus(); });
     if (_inputNome)     _inputNome.addEventListener('keydown',     e => { if (e.key === 'Enter') _inputValidade.focus(); });
     if (_inputValidade) _inputValidade.addEventListener('keydown', e => { if (e.key === 'Enter') salvarProduto(); });
+    if (_inputValidade) _inputValidade.addEventListener('change', () => {
+        const erroBanner = document.getElementById('erro-vencido');
+        if (!erroBanner) return;
+        const hoje = new Date(); hoje.setHours(0,0,0,0);
+        const val = _inputValidade.value;
+        if (!val || new Date(val + 'T00:00:00') >= hoje) {
+            erroBanner.classList.add('escondido');
+            _inputValidade.style.borderColor = '';
+            _inputValidade.style.boxShadow = '';
+        }
+    });
     if (_inputCatNome)  _inputCatNome.addEventListener('keydown',  e => { if (e.key === 'Enter') salvarCategoria(); });
 
     verificarSessao();

@@ -1105,3 +1105,64 @@ select:focus {
     .usuario-item > *:nth-child(2),
     .usuario-item > *:nth-child(3) { display: none; }
 }
+/* ── Banner de erro: produto vencido ─────────────────────────── */
+.banner-erro-vencido {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    background: #fef2f2;
+    border: 1.5px solid #fca5a5;
+    border-left: 5px solid #dc2626;
+    border-radius: 10px;
+    padding: 1rem 1.1rem;
+    margin-top: 0.75rem;
+    animation: shake 0.4s ease;
+}
+
+[data-tema="escuro"] .banner-erro-vencido {
+    background: #2d1515;
+    border-color: #7f1d1d;
+    border-left-color: #ef4444;
+}
+
+.banner-erro-vencido .erro-vencido-icone {
+    font-size: 1.5rem;
+    line-height: 1;
+    flex-shrink: 0;
+    margin-top: 1px;
+}
+
+.banner-erro-vencido .erro-vencido-texto {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+
+.banner-erro-vencido strong {
+    font-size: 0.9rem;
+    color: #b91c1c;
+    display: block;
+}
+
+[data-tema="escuro"] .banner-erro-vencido strong {
+    color: #f87171;
+}
+
+.banner-erro-vencido span {
+    font-size: 0.82rem;
+    color: #991b1b;
+    line-height: 1.4;
+}
+
+[data-tema="escuro"] .banner-erro-vencido span {
+    color: #fca5a5;
+}
+
+@keyframes shake {
+    0%   { transform: translateX(0); }
+    20%  { transform: translateX(-6px); }
+    40%  { transform: translateX(6px); }
+    60%  { transform: translateX(-4px); }
+    80%  { transform: translateX(4px); }
+    100% { transform: translateX(0); }
+}
