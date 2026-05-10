@@ -644,12 +644,14 @@ function salvarProduto() {
     const hoje = new Date(); hoje.setHours(0,0,0,0);
     const dataVal = new Date(validade + 'T00:00:00');
     if (dataVal < hoje) {
-        mostrarErroCampo(inputValidade, 'erro-vencido-inline',
-            '🚫 Produto Vencido — Verifique a Validade');
+        alert('🚫 PRODUTO VENCIDO\n\nNão é permitido cadastrar produtos com validade vencida.\nVerifique a data e tente novamente.');
+        inputValidade.style.borderColor = '#dc2626';
+        inputValidade.style.boxShadow = '0 0 0 3px rgba(220,38,38,0.25)';
         inputValidade.focus();
-        return; // BLOQUEIO GARANTIDO
+        return;
     }
-    esconderErroCampo(inputValidade, 'erro-vencido-inline');
+    inputValidade.style.borderColor = '';
+    inputValidade.style.boxShadow = '';
 
     if (!produtos[catId]) produtos[catId] = [];
 
@@ -707,25 +709,16 @@ function mostrarSucesso() {
 
 // Mostra mensagem de erro abaixo de um campo
 function mostrarErroCampo(campo, idErro, mensagem) {
+    // mantido por compatibilidade — usa alert garantido
+    alert(mensagem);
     campo.style.borderColor = '#dc2626';
     campo.style.boxShadow = '0 0 0 3px rgba(220,38,38,0.25)';
-    let el = document.getElementById(idErro);
-    if (!el) {
-        el = document.createElement('div');
-        el.id = idErro;
-        el.className = 'msg-erro-campo';
-        campo.parentNode.insertBefore(el, campo.nextSibling);
-    }
-    el.textContent = mensagem;
-    el.style.display = 'block';
-    campo.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    campo.focus();
 }
 
 function esconderErroCampo(campo, idErro) {
     campo.style.borderColor = '';
     campo.style.boxShadow = '';
-    const el = document.getElementById(idErro);
-    if (el) el.style.display = 'none';
 }
 
 // Feedback quando produto duplicado é somado
@@ -753,7 +746,8 @@ function limparFormulario() {
     inputValidade.value = '';
     const inputQtd = document.getElementById('input-quantidade');
     if (inputQtd) inputQtd.value = 1;
-    esconderErroCampo(inputValidade, 'erro-vencido-inline');
+    inputValidade.style.borderColor = '';
+    inputValidade.style.boxShadow = '';
     btnCadastrar.textContent = '✅ Cadastrar produto';
     btnCadastrar.classList.remove('btn-editando');
     document.getElementById('btn-cancelar').style.display = 'none';
