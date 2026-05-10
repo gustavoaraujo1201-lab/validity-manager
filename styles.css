@@ -180,14 +180,8 @@ html, body {
 .sidebar-nav {
     width: 148px;
     flex-shrink: 0;
-    position: sticky;
-    top: 52px;
-    height: calc(100vh - 52px);
-    display: flex;
-    align-items: flex-start;
     padding-right: 0.75rem;
-    padding-top: 1.25rem;
-    z-index: 10;
+    padding-top: 1.5rem;
 }
 
 .conteudo-principal {
