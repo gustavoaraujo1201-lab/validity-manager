@@ -323,14 +323,13 @@
     <!-- MODAL Unidade -->
     <div id="overlay-modal-unidade" class="overlay-modal escondido" onclick="fecharModalUnidade()"></div>
     <div id="modal-unidade" class="modal escondido">
-        <h3>🏪 Nova Unidade</h3>
+        <h3 id="modal-unidade-titulo">🏪 Nova Unidade</h3>
         <p class="modal-descricao">Cadastre uma loja ou filial que utiliza o sistema.</p>
         <label for="input-unidade-nome">Nome da unidade</label>
-        <input type="text" id="input-unidade-nome" placeholder="Ex: Loja Centro, Filial Norte..." maxlength="40">
-        <label for="input-unidade-endereco" style="margin-top:0.75rem">Endereço (opcional)</label>
-        <input type="text" id="input-unidade-endereco" placeholder="Ex: Rua das Flores, 123" maxlength="80">
-        <label for="input-unidade-responsavel" style="margin-top:0.75rem">Responsável (opcional)</label>
-        <input type="text" id="input-unidade-responsavel" placeholder="Ex: João Silva" maxlength="40">
+        <input type="text" id="input-unidade-nome" placeholder="Ex: Drogaria Boa Saúde, Farmácia Central..."
+            maxlength="60">
+        <label for="input-unidade-apelido" style="margin-top:0.75rem">Apelido da loja</label>
+        <input type="text" id="input-unidade-apelido" placeholder="Ex: Loja 01, Filial Norte..." maxlength="40">
         <div class="modal-acoes" style="margin-top:1rem">
             <button class="btn-modal-cancelar" onclick="fecharModalUnidade()">Cancelar</button>
             <button class="btn-modal-salvar" onclick="salvarUnidade()">Salvar</button>
@@ -353,8 +352,7 @@
         <div style="display:flex;align-items:center;justify-content:space-between;padding:0.75rem 0;border-bottom:1px solid var(--border-color);">
             <div>
                 <strong style="color:var(--text-primary);font-size:0.95rem">🏪 ${u.nome}</strong>
-                ${u.endereco ? `<div style="font-size:0.8rem;color:var(--text-secondary);margin-top:2px">📍 ${u.endereco}</div>` : ''}
-                ${u.responsavel ? `<div style="font-size:0.8rem;color:var(--text-secondary)">👤 ${u.responsavel}</div>` : ''}
+                ${u.apelido ? `<div style="font-size:0.8rem;color:var(--text-secondary);margin-top:2px">🏷️ ${u.apelido}</div>` : ''}
             </div>
             <div style="display:flex;gap:6px;">
                 <button onclick="abrirModalUnidade(${i})" style="background:none;border:1px solid #2563eb;color:#2563eb;border-radius:6px;padding:4px 10px;cursor:pointer;font-size:0.78rem;">✏️ Editar</button>
@@ -370,15 +368,13 @@
 
             if (idEditandoUnidade !== null) {
                 const u = unidades[idEditandoUnidade];
-                document.querySelector('#modal-unidade h3').textContent = '🏪 Editar Unidade';
+                document.getElementById('modal-unidade-titulo').textContent = '🏪 Editar Unidade';
                 document.getElementById('input-unidade-nome').value = u.nome || '';
-                document.getElementById('input-unidade-endereco').value = u.endereco || '';
-                document.getElementById('input-unidade-responsavel').value = u.responsavel || '';
+                document.getElementById('input-unidade-apelido').value = u.apelido || '';
             } else {
-                document.querySelector('#modal-unidade h3').textContent = '🏪 Nova Unidade';
+                document.getElementById('modal-unidade-titulo').textContent = '🏪 Nova Unidade';
                 document.getElementById('input-unidade-nome').value = '';
-                document.getElementById('input-unidade-endereco').value = '';
-                document.getElementById('input-unidade-responsavel').value = '';
+                document.getElementById('input-unidade-apelido').value = '';
             }
 
             document.getElementById('overlay-modal-unidade').classList.remove('escondido');
@@ -394,15 +390,15 @@
 
         function salvarUnidade() {
             const nome = document.getElementById('input-unidade-nome').value.trim();
+            const apelido = document.getElementById('input-unidade-apelido').value.trim();
             if (!nome) { alert('Informe o nome da unidade.'); return; }
-            const endereco = document.getElementById('input-unidade-endereco').value.trim();
-            const responsavel = document.getElementById('input-unidade-responsavel').value.trim();
+
             const unidades = JSON.parse(localStorage.getItem('cv_unidades') || '[]');
 
             if (idEditandoUnidade !== null) {
-                unidades[idEditandoUnidade] = { nome, endereco, responsavel };
+                unidades[idEditandoUnidade] = { nome, apelido };
             } else {
-                unidades.push({ nome, endereco, responsavel });
+                unidades.push({ nome, apelido });
             }
 
             localStorage.setItem('cv_unidades', JSON.stringify(unidades));
