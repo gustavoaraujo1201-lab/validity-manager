@@ -1166,3 +1166,25 @@ select:focus {
     80%  { transform: translateX(4px); }
     100% { transform: translateX(0); }
 }
+
+/* ── Mensagem de erro inline abaixo do campo ─────────────────── */
+.msg-erro-campo {
+    display: none;
+    background: #fef2f2;
+    border: 1.5px solid #fca5a5;
+    border-left: 5px solid #dc2626;
+    border-radius: 8px;
+    padding: 0.7rem 1rem;
+    margin-top: 0.4rem;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: #b91c1c;
+    animation: shake 0.4s ease;
+}
+
+[data-tema="escuro"] .msg-erro-campo {
+    background: #2d1515;
+    border-color: #7f1d1d;
+    border-left-color: #ef4444;
+    color: #f87171;
+}

@@ -640,23 +640,37 @@ function salvarProduto() {
     if (!nome)    { alert('⚠️ Informe o nome do produto!'); inputNome.focus(); return; }
     if (!validade){ alert('⚠️ Informe a data de validade!'); inputValidade.focus(); return; }
 
-    // Bloqueia produto vencido — validação infalível
+    // ── 1. BLOQUEIA PRODUTO VENCIDO ─────────────────────────────
     const hoje = new Date(); hoje.setHours(0,0,0,0);
     const dataVal = new Date(validade + 'T00:00:00');
     if (dataVal < hoje) {
-        alert('🚫 Produto vencido! Não é permitido cadastrar produtos com data de validade vencida. Corrija a data e tente novamente.');
-        inputValidade.style.borderColor = '#dc2626';
-        inputValidade.style.boxShadow = '0 0 0 3px rgba(220,38,38,0.25)';
+        mostrarErroCampo(inputValidade, 'erro-vencido-inline',
+            '🚫 Produto Vencido — Verifique a Validade');
         inputValidade.focus();
         return; // BLOQUEIO GARANTIDO
     }
-    inputValidade.style.borderColor = '';
-    inputValidade.style.boxShadow = '';
+    esconderErroCampo(inputValidade, 'erro-vencido-inline');
 
     if (!produtos[catId]) produtos[catId] = [];
 
+    // ── 2. DUPLICATA: mesmo código + mesmo nome → soma quantidade ─
+    const inputQtd = document.getElementById('input-quantidade');
+    const quantidade = parseInt(inputQtd ? inputQtd.value : '1') || 1;
+
     if (idEditando === null) {
-        produtos[catId].push({ id: Date.now(), codigo, nome, validade });
+        const duplicado = (produtos[catId] || []).find(
+            p => p.codigo.trim() === codigo && p.nome.trim().toLowerCase() === nome.toLowerCase()
+        );
+        if (duplicado) {
+            const qtdAtual = parseInt(duplicado.quantidade) || 1;
+            duplicado.quantidade = qtdAtual + quantidade;
+            salvarDados();
+            limparFormulario();
+            atualizarResumoGlobal();
+            mostrarSucessoDuplicata(qtdAtual + quantidade, duplicado.nome);
+            return;
+        }
+        produtos[catId].push({ id: Date.now(), codigo, nome, validade, quantidade });
     } else {
         // Se mudou de categoria durante edição
         const catOrigem = Object.keys(produtos).find(k => produtos[k].some(p => p.id === idEditando));
@@ -691,6 +705,41 @@ function mostrarSucesso() {
     }, 1200);
 }
 
+// Mostra mensagem de erro abaixo de um campo
+function mostrarErroCampo(campo, idErro, mensagem) {
+    campo.style.borderColor = '#dc2626';
+    campo.style.boxShadow = '0 0 0 3px rgba(220,38,38,0.25)';
+    let el = document.getElementById(idErro);
+    if (!el) {
+        el = document.createElement('div');
+        el.id = idErro;
+        el.className = 'msg-erro-campo';
+        campo.parentNode.insertBefore(el, campo.nextSibling);
+    }
+    el.textContent = mensagem;
+    el.style.display = 'block';
+    campo.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+function esconderErroCampo(campo, idErro) {
+    campo.style.borderColor = '';
+    campo.style.boxShadow = '';
+    const el = document.getElementById(idErro);
+    if (el) el.style.display = 'none';
+}
+
+// Feedback quando produto duplicado é somado
+function mostrarSucessoDuplicata(novaQtd, nomeProduto) {
+    const btn = btnCadastrar;
+    const orig = btn.textContent;
+    btn.textContent = `🔢 Quantidade atualizada: ${novaQtd}`;
+    btn.style.background = '#2563eb';
+    setTimeout(() => {
+        btn.textContent = orig;
+        btn.style.background = '';
+    }, 2500);
+}
+
 // ===== CANCELAR EDIÇÃO =====
 function cancelarEdicao() {
     idEditando = null;
@@ -702,6 +751,9 @@ function limparFormulario() {
     inputCodigo.value   = '';
     inputNome.value     = '';
     inputValidade.value = '';
+    const inputQtd = document.getElementById('input-quantidade');
+    if (inputQtd) inputQtd.value = 1;
+    esconderErroCampo(inputValidade, 'erro-vencido-inline');
     btnCadastrar.textContent = '✅ Cadastrar produto';
     btnCadastrar.classList.remove('btn-editando');
     document.getElementById('btn-cancelar').style.display = 'none';
