@@ -119,16 +119,30 @@ function renderizarTabelaUsuarios() {
             nomeLoja = loja ? loja.nome : '—';
         }
 
-        const adminRaiz = u.id === 1;
-        const acoes = euMesmo
-            ? '<span style="font-size:0.75rem;color:#9ca3af">—</span>'
-            : adminRaiz
-                ? '<span style="font-size:0.75rem;color:#9ca3af" title="Conta protegida — não pode ser alterada pela interface">🔒 Protegido</span>'
-                : `<div class="acoes">
+        const adminRaiz   = u.id === 1;
+        const outroAdmin  = u.perfil === 'admin' && !euMesmo && !adminRaiz;
+
+        let acoes;
+        if (adminRaiz) {
+            // Admin raiz: completamente bloqueado para todos
+            acoes = '<span style="font-size:0.75rem;color:#9ca3af" title="Conta protegida">🔒 Protegido</span>';
+        } else if (euMesmo) {
+            // Eu mesmo (qualquer perfil): posso editar e trocar minha senha, mas não me excluir
+            acoes = `<div class="acoes">
+                <button class="btn-editar" onclick="abrirModalUsuario(${u.id})" title="Editar meu perfil">✏️</button>
+                <button class="btn-reset"  onclick="abrirModalReset(${u.id})"   title="Trocar minha senha">🔑</button>
+               </div>`;
+        } else if (outroAdmin) {
+            // Outro admin: não pode ser tocado por mim
+            acoes = '<span style="font-size:0.75rem;color:#9ca3af" title="Outro administrador não pode ser editado">🔒</span>';
+        } else {
+            // Colaborador: admin pode editar, trocar senha e excluir
+            acoes = `<div class="acoes">
                 <button class="btn-editar"  onclick="abrirModalUsuario(${u.id})" title="Editar">✏️</button>
                 <button class="btn-reset"   onclick="abrirModalReset(${u.id})"   title="Redefinir senha">🔑</button>
                 <button class="btn-excluir" onclick="excluirUsuario(${u.id})"    title="Excluir">🗑️</button>
                </div>`;
+        }
 
         html += `
             <div class="usuario-item ${euMesmo ? 'eu' : ''}">
@@ -162,6 +176,12 @@ function popularSelectLojas(valorAtual) {
 
 function abrirModalUsuario(id) {
     if (id === 1) { alert('⛔ O administrador raiz não pode ser editado pela interface.'); return; }
+    const usuarios = carregarUsuarios();
+    const alvo = usuarios.find(x => x.id === id);
+    if (alvo && alvo.perfil === 'admin' && id !== sessaoAtual.id) {
+        alert('⛔ Você não pode editar outro administrador.');
+        return;
+    }
     idEditandoUsuario = id || null;
     const overlay = document.getElementById('overlay-modal-usuario');
     const modal   = document.getElementById('modal-usuario');
@@ -247,6 +267,7 @@ function excluirUsuario(id) {
     let usuarios = carregarUsuarios();
     const u = usuarios.find(x => x.id === id);
     if (!u) return;
+    if (u.perfil === 'admin') { alert('⛔ Administradores não podem ser excluídos por outros administradores.'); return; }
     if (!confirm('Excluir o usuário "' + (u.nome || u.usuario) + '"? Esta ação não pode ser desfeita.')) return;
     usuarios = usuarios.filter(x => x.id !== id);
     salvarUsuarios(usuarios);
@@ -261,6 +282,12 @@ let idResetandoUsuario = null;
 
 function abrirModalReset(id) {
     if (id === 1) { alert('⛔ A senha do administrador raiz não pode ser alterada pela interface.'); return; }
+    const usuarios = carregarUsuarios();
+    const alvo = usuarios.find(x => x.id === id);
+    if (alvo && alvo.perfil === 'admin' && id !== sessaoAtual.id) {
+        alert('⛔ Você não pode alterar a senha de outro administrador.');
+        return;
+    }
     if (!isAdmin()) { alert('⛔ Apenas administradores podem redefinir senhas.'); return; }
     const usuarios = carregarUsuarios();
     const u = usuarios.find(x => x.id === id);
