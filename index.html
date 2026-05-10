@@ -2,6 +2,13 @@
 <html lang="pt-BR">
 
 <head>
+    <script>
+        // Redireciona para /login se não houver sessão ativa
+        // Executado antes de qualquer coisa para evitar tela preta
+        if (!sessionStorage.getItem('cv_sessao')) {
+            window.location.replace('/login');
+        }
+    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Controle de Validade</title>
@@ -340,7 +347,7 @@
         // ===== CADASTRO DE UNIDADES =====
         let idEditandoUnidade = null;
 
-        function renderizarUnidades() {
+        function carregarUnidades() {
             const unidades = JSON.parse(localStorage.getItem('cv_unidades') || '[]');
             const lista = document.getElementById('lista-unidades');
             if (!lista) return;
@@ -403,7 +410,7 @@
 
             localStorage.setItem('cv_unidades', JSON.stringify(unidades));
             fecharModalUnidade();
-            renderizarUnidades();
+            carregarUnidades();
         }
 
         function excluirUnidade(idx) {
@@ -411,14 +418,14 @@
             const unidades = JSON.parse(localStorage.getItem('cv_unidades') || '[]');
             unidades.splice(idx, 1);
             localStorage.setItem('cv_unidades', JSON.stringify(unidades));
-            renderizarUnidades();
+            carregarUnidades();
         }
 
         document.addEventListener('DOMContentLoaded', function () {
             const btnUnidade = document.getElementById('aba-unidade');
             if (btnUnidade) {
                 btnUnidade.addEventListener('click', function () {
-                    setTimeout(renderizarUnidades, 50);
+                    setTimeout(carregarUnidades, 50);
                 });
             }
         });
