@@ -119,9 +119,12 @@ function renderizarTabelaUsuarios() {
             nomeLoja = loja ? loja.nome : '—';
         }
 
+        const adminRaiz = u.id === 1;
         const acoes = euMesmo
             ? '<span style="font-size:0.75rem;color:#9ca3af">—</span>'
-            : `<div class="acoes">
+            : adminRaiz
+                ? '<span style="font-size:0.75rem;color:#9ca3af" title="Conta protegida — não pode ser alterada pela interface">🔒 Protegido</span>'
+                : `<div class="acoes">
                 <button class="btn-editar"  onclick="abrirModalUsuario(${u.id})" title="Editar">✏️</button>
                 <button class="btn-reset"   onclick="abrirModalReset(${u.id})"   title="Redefinir senha">🔑</button>
                 <button class="btn-excluir" onclick="excluirUsuario(${u.id})"    title="Excluir">🗑️</button>
@@ -158,6 +161,7 @@ function popularSelectLojas(valorAtual) {
 }
 
 function abrirModalUsuario(id) {
+    if (id === 1) { alert('⛔ O administrador raiz não pode ser editado pela interface.'); return; }
     idEditandoUsuario = id || null;
     const overlay = document.getElementById('overlay-modal-usuario');
     const modal   = document.getElementById('modal-usuario');
@@ -239,6 +243,7 @@ function salvarUsuario() {
 }
 
 function excluirUsuario(id) {
+    if (id === 1) { alert('⛔ O administrador raiz não pode ser excluído pela interface.'); return; }
     let usuarios = carregarUsuarios();
     const u = usuarios.find(x => x.id === id);
     if (!u) return;
@@ -255,6 +260,7 @@ function excluirUsuario(id) {
 let idResetandoUsuario = null;
 
 function abrirModalReset(id) {
+    if (id === 1) { alert('⛔ A senha do administrador raiz não pode ser alterada pela interface.'); return; }
     if (!isAdmin()) { alert('⛔ Apenas administradores podem redefinir senhas.'); return; }
     const usuarios = carregarUsuarios();
     const u = usuarios.find(x => x.id === id);
