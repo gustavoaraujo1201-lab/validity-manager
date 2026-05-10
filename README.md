@@ -35,8 +35,8 @@ Sistema web para controle de validade de produtos, com autenticação por perfil
 | Campo   | Valor     |
 |---------|-----------|
 | Usuário | `admin`   |
-| Senha   | `admin`   |
-| Perfil  | `admin`   |
+| Senha   | `*****`   |
+| Perfil  | `*****`   |
 
 As credenciais padrão são recriadas automaticamente no `localStorage` se forem removidas (`inicializarUsuarios()` em `login.html`).
 
