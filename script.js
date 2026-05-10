@@ -643,17 +643,18 @@ function salvarProduto() {
     // Bloqueia produto vencido
     const hoje = new Date(); hoje.setHours(0,0,0,0);
     const dataVal = new Date(validade + 'T00:00:00');
+    const erroBanner = document.getElementById('erro-vencido');
     if (dataVal < hoje) {
-        alert('🚫 Produto VENCIDO!\n\nEste produto não pode ser cadastrado pois sua data de validade já expirou.\n\nVerifique a data informada.');
-        inputValidade.focus();
+        erroBanner.classList.remove('escondido');
         inputValidade.style.borderColor = '#dc2626';
-        inputValidade.style.boxShadow = '0 0 0 3px rgba(220,38,38,0.2)';
-        setTimeout(() => {
-            inputValidade.style.borderColor = '';
-            inputValidade.style.boxShadow = '';
-        }, 3000);
+        inputValidade.style.boxShadow = '0 0 0 3px rgba(220,38,38,0.25)';
+        inputValidade.focus();
+        inputValidade.scrollIntoView({ behavior: 'smooth', block: 'center' });
         return;
     }
+    erroBanner.classList.add('escondido');
+    inputValidade.style.borderColor = '';
+    inputValidade.style.boxShadow = '';
 
     if (!produtos[catId]) produtos[catId] = [];
 
