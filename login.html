@@ -290,6 +290,7 @@
             sessionStorage.setItem('cv_sessao', JSON.stringify({
                 id: encontrado.id,
                 usuario: encontrado.usuario,
+                nome: encontrado.nome || encontrado.usuario,
                 perfil: encontrado.perfil
             }));
 
