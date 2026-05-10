@@ -1120,14 +1120,21 @@ function aplicarEstilos(ws, linhas) {
     }
 }
 
-// Enter navegação
-inputCodigo.addEventListener('keydown',    e => { if (e.key === 'Enter') inputNome.focus(); });
-inputNome.addEventListener('keydown',      e => { if (e.key === 'Enter') inputValidade.focus(); });
-inputValidade.addEventListener('keydown',  e => { if (e.key === 'Enter') salvarProduto(); });
-inputCatNome.addEventListener('keydown',   e => { if (e.key === 'Enter') salvarCategoria(); });
-
 // ===== INICIALIZAÇÃO =====
-verificarSessao();
-carregarDados();
-renderizarSelectCategorias();
-atualizarResumoGlobal();
+document.addEventListener('DOMContentLoaded', function() {
+    // Enter navegação
+    const _inputCodigo   = document.getElementById('input-codigo');
+    const _inputNome     = document.getElementById('input-nome');
+    const _inputValidade = document.getElementById('input-validade');
+    const _inputCatNome  = document.getElementById('input-categoria-nome');
+
+    if (_inputCodigo)   _inputCodigo.addEventListener('keydown',   e => { if (e.key === 'Enter') _inputNome.focus(); });
+    if (_inputNome)     _inputNome.addEventListener('keydown',     e => { if (e.key === 'Enter') _inputValidade.focus(); });
+    if (_inputValidade) _inputValidade.addEventListener('keydown', e => { if (e.key === 'Enter') salvarProduto(); });
+    if (_inputCatNome)  _inputCatNome.addEventListener('keydown',  e => { if (e.key === 'Enter') salvarCategoria(); });
+
+    verificarSessao();
+    carregarDados();
+    renderizarSelectCategorias();
+    atualizarResumoGlobal();
+});
