@@ -85,14 +85,14 @@ function salvarUsuarios(lista) {
     localStorage.setItem('cv_usuarios', JSON.stringify(lista));
 }
 
-// Retorna lista de unidades cadastradas
-function carregarUnidades() {
+// Retorna lista de unidades cadastradas (uso interno do script.js)
+function getUnidades() {
     return JSON.parse(localStorage.getItem('cv_unidades') || '[]');
 }
 
 function renderizarTabelaUsuarios() {
     const usuarios  = carregarUsuarios();
-    const unidades  = carregarUnidades();
+    const unidades  = getUnidades();
     const el        = document.getElementById('tabela-usuarios');
 
     let html = `
@@ -162,7 +162,7 @@ function renderizarTabelaUsuarios() {
 function popularSelectLojas(valorAtual) {
     const sel = document.getElementById('mu-unidade');
     if (!sel) return;
-    const unidades = carregarUnidades();
+    const unidades = getUnidades();
     sel.innerHTML = '<option value="">— Sem loja vinculada —</option>';
     unidades.forEach((u, idx) => {
         const opt = document.createElement('option');
@@ -446,7 +446,7 @@ function renderizarGridCategorias() {
     }
 
     const usuarios  = carregarUsuarios();
-    const unidades  = carregarUnidades();
+    const unidades  = getUnidades();
 
     let html = '';
     lista.forEach(cat => {
@@ -720,7 +720,7 @@ function abrirModalCategoria(idCat) {
     const selColab = document.getElementById('select-cat-colaborador');
     selColab.innerHTML = '<option value="">— Selecione um colaborador —</option>';
     const usuarios = carregarUsuarios().filter(u => u.perfil !== 'admin');
-    const unidades = carregarUnidades();
+    const unidades = getUnidades();
     usuarios.forEach(u => {
         const opt = document.createElement('option');
         opt.value = u.id;
