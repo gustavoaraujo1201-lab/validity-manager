@@ -719,7 +719,7 @@ function abrirModalCategoria(idCat) {
     const campoAtribuir = document.getElementById('campo-atribuir-colaborador');
     const selColab = document.getElementById('select-cat-colaborador');
     selColab.innerHTML = '<option value="">— Selecione um colaborador —</option>';
-    const usuarios = carregarUsuarios().filter(u => u.perfil !== 'admin');
+    const usuarios = carregarUsuarios().filter(u => u.id !== 1); // exclui apenas o admin raiz
     const unidades = getUnidades();
     usuarios.forEach(u => {
         const opt = document.createElement('option');
