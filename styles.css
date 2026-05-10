@@ -264,9 +264,9 @@ html, body {
 
 /* ===== TÍTULO DE SEÇÃO ===== */
 .secao-titulo {
-    margin-bottom: 1.2rem;
+    margin-bottom: 1.25rem;
 }
-.secao-titulo h2 { font-size: 1.2rem; font-weight: 700; color: var(--text-primary); }
+.secao-titulo h2 { font-size: 1.25rem; font-weight: 700; color: var(--text-primary); margin-bottom: 2px; }
 .secao-titulo p  { font-size: 0.82rem; color: var(--text-secondary); }
 
 .secao-titulo-row {
@@ -283,20 +283,22 @@ html, body {
 /* ===== CARD DO FORMULÁRIO ===== */
 .card-form {
     background: var(--bg-card);
-    border-radius: 12px;
-    padding: 1.25rem;
+    border-radius: 14px;
+    padding: 1.5rem;
     border: 1px solid var(--border-color);
-    margin-bottom: 1rem;
+    margin-bottom: 1.25rem;
     transition: background 0.3s, border-color 0.3s;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
 }
 
 .divisor {
     border-top: 1px dashed var(--border-color);
-    margin: 0.75rem 0;
+    margin: 1rem 0;
+    opacity: 0.6;
 }
 
 /* ===== CAMPOS ===== */
-.campo-grupo { margin-bottom: 0.75rem; }
+.campo-grupo { margin-bottom: 0.9rem; }
 .campo-grupo.full { display: block; }
 .campo-grupo.dois {
     display: grid;
@@ -329,6 +331,22 @@ input[type="password"]:focus {
 }
 
 #input-codigo { font-family: monospace; }
+
+input[type="number"] {
+    width: 100%;
+    padding: 9px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 0.9rem;
+    outline: none;
+    transition: border-color 0.2s, background 0.3s, box-shadow 0.2s;
+    background: var(--bg-input);
+    color: var(--input-color);
+}
+input[type="number"]:focus {
+    border-color: #58a6ff;
+    box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.15);
+}
 
 /* Select customizado */
 .select-wrapper {
@@ -366,35 +384,49 @@ select:focus {
 }
 
 /* ===== BOTÕES DO FORM ===== */
-.form-acoes { display: flex; gap: 8px; margin-top: 0.75rem; }
+.form-acoes {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 1rem;
+}
 
 .btn-principal {
-    flex: 1;
-    padding: 10px;
+    width: 100%;
+    padding: 12px 16px;
     background-color: #2563eb;
     color: white;
     border: none;
-    border-radius: 8px;
-    font-size: 0.9rem;
+    border-radius: 10px;
+    font-size: 0.95rem;
     font-weight: 600;
     cursor: pointer;
-    transition: background-color 0.2s;
+    transition: background-color 0.2s, transform 0.1s, box-shadow 0.2s;
+    letter-spacing: 0.01em;
+    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25);
 }
-.btn-principal:hover         { background-color: #1d4ed8; }
-.btn-principal.btn-editando  { background-color: #d97706; }
-.btn-principal.btn-editando:hover { background-color: #b45309; }
+.btn-principal:hover {
+    background-color: #1d4ed8;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
+    transform: translateY(-1px);
+}
+.btn-principal:active { transform: translateY(0); }
+.btn-principal.btn-editando  { background-color: #d97706; box-shadow: 0 2px 8px rgba(217,119,6,0.25); }
+.btn-principal.btn-editando:hover { background-color: #b45309; box-shadow: 0 4px 12px rgba(217,119,6,0.35); }
 
 .btn-cancelar {
     display: none;
+    width: 100%;
     padding: 10px 16px;
     background: none;
     color: var(--btn-cancelar-color);
     border: 1px solid var(--btn-cancelar-border);
-    border-radius: 8px;
+    border-radius: 10px;
     font-size: 0.85rem;
     cursor: pointer;
     transition: all 0.15s;
     white-space: nowrap;
+    text-align: center;
 }
 .btn-cancelar:hover { background: var(--btn-cancelar-hover); }
 
@@ -418,16 +450,17 @@ select:focus {
 
 .stat-card {
     background: var(--bg-card);
-    border-radius: 10px;
-    padding: 0.75rem 1rem;
+    border-radius: 12px;
+    padding: 1rem 1.1rem;
     border: 1px solid var(--border-color);
     transition: background 0.3s, border-color 0.3s;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
 }
-.stat-label  { font-size: 0.68rem; color: var(--text-secondary); margin-bottom: 2px; }
-.stat-valor  { font-size: 1.5rem; font-weight: 700; color: var(--text-primary); }
-.stat-valor.aviso   { color: #b45309; }
-.stat-valor.critico { color: #b91c1c; }
-.stat-valor.vencido { color: #b91c1c; }
+.stat-label  { font-size: 0.7rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-secondary); margin-bottom: 4px; }
+.stat-valor  { font-size: 1.65rem; font-weight: 700; color: var(--text-primary); line-height: 1.1; }
+.stat-valor.aviso   { color: #f59e0b; }
+.stat-valor.critico { color: #ef4444; }
+.stat-valor.vencido { color: #ef4444; }
 
 /* ===== GRID DE CATEGORIAS ===== */
 .grid-categorias {
