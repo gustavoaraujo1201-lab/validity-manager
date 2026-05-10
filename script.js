@@ -640,19 +640,16 @@ function salvarProduto() {
     if (!nome)    { alert('⚠️ Informe o nome do produto!'); inputNome.focus(); return; }
     if (!validade){ alert('⚠️ Informe a data de validade!'); inputValidade.focus(); return; }
 
-    // Bloqueia produto vencido — validação infalível independente do banner
+    // Bloqueia produto vencido — validação infalível
     const hoje = new Date(); hoje.setHours(0,0,0,0);
     const dataVal = new Date(validade + 'T00:00:00');
-    const erroBanner = document.getElementById('erro-vencido');
     if (dataVal < hoje) {
-        if (erroBanner) erroBanner.classList.remove('escondido');
+        alert('🚫 Produto vencido! Não é permitido cadastrar produtos com data de validade vencida. Corrija a data e tente novamente.');
         inputValidade.style.borderColor = '#dc2626';
         inputValidade.style.boxShadow = '0 0 0 3px rgba(220,38,38,0.25)';
         inputValidade.focus();
-        inputValidade.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        return; // BLOQUEIO GARANTIDO: nunca chega no push/save
+        return; // BLOQUEIO GARANTIDO
     }
-    if (erroBanner) erroBanner.classList.add('escondido');
     inputValidade.style.borderColor = '';
     inputValidade.style.boxShadow = '';
 
