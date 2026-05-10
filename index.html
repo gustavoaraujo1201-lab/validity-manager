@@ -37,9 +37,9 @@
             <nav class="abas">
                 <button class="aba ativa" id="aba-cadastro" onclick="mudarAba('cadastro')">
                     <span class="aba-icone">➕</span>
-                    <span>Cadastro Produtos</span>
+                    <span>Cadastro Produto</span>
                 </button>
-                <button class="aba" id="aba-unidade" onclick="mudarAba('unidade')">
+                <button class="aba aba-admin escondido" id="aba-unidade" onclick="mudarAba('unidade')">
                     <span class="aba-icone">🏪</span>
                     <span>Cad. Unidade</span>
                 </button>
@@ -62,7 +62,7 @@
                 <div class="secao-inner">
 
                     <div class="secao-titulo">
-                        <h2>Cadastro de Produtos</h2>
+                        <h2>Cadastro de Produto</h2>
                         <p>Selecione a categoria e preencha os dados do produto</p>
                     </div>
 
@@ -340,7 +340,7 @@
         // ===== CADASTRO DE UNIDADES =====
         let idEditandoUnidade = null;
 
-        function renderizarUnidades() {
+        function carregarUnidades() {
             const unidades = JSON.parse(localStorage.getItem('cv_unidades') || '[]');
             const lista = document.getElementById('lista-unidades');
             if (!lista) return;
@@ -403,7 +403,7 @@
 
             localStorage.setItem('cv_unidades', JSON.stringify(unidades));
             fecharModalUnidade();
-            renderizarUnidades();
+            carregarUnidades();
         }
 
         function excluirUnidade(idx) {
@@ -411,14 +411,14 @@
             const unidades = JSON.parse(localStorage.getItem('cv_unidades') || '[]');
             unidades.splice(idx, 1);
             localStorage.setItem('cv_unidades', JSON.stringify(unidades));
-            renderizarUnidades();
+            carregarUnidades();
         }
 
         document.addEventListener('DOMContentLoaded', function () {
             const btnUnidade = document.getElementById('aba-unidade');
             if (btnUnidade) {
                 btnUnidade.addEventListener('click', function () {
-                    setTimeout(renderizarUnidades, 50);
+                    setTimeout(carregarUnidades, 50);
                 });
             }
         });
