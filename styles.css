@@ -1042,7 +1042,7 @@ select:focus {
 /* ===== TABELA DE USUÁRIOS ===== */
 .tabela-usuarios-header {
     display: grid;
-    grid-template-columns: 2fr 1.5fr 1fr 1fr 110px;
+    grid-template-columns: 2fr 1.5fr 1.5fr 1fr 1fr 110px;
     gap: 8px;
     padding: 8px 12px 10px;
     border-bottom: 2px solid var(--border-color);
@@ -1056,7 +1056,7 @@ select:focus {
 }
 .usuario-item {
     display: grid;
-    grid-template-columns: 2fr 1.5fr 1fr 1fr 110px;
+    grid-template-columns: 2fr 1.5fr 1.5fr 1fr 1fr 110px;
     gap: 8px;
     align-items: center;
     padding: 10px 12px;
@@ -1101,5 +1101,7 @@ select:focus {
     .tabela-usuarios-header,
     .usuario-item { grid-template-columns: 1fr 1fr auto; }
     .tabela-usuarios-header span:nth-child(2),
-    .usuario-item > *:nth-child(2) { display: none; }
+    .tabela-usuarios-header span:nth-child(3),
+    .usuario-item > *:nth-child(2),
+    .usuario-item > *:nth-child(3) { display: none; }
 }

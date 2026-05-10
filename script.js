@@ -38,8 +38,9 @@ function verificarSessao() {
     sessaoAtual = JSON.parse(raw);
     document.body.style.visibility = 'visible';
 
-    // Exibe nome no topo
-    document.getElementById('topo-nome-usuario').textContent = '👤 ' + sessaoAtual.usuario;
+    // Exibe nome no topo (usa nome completo se existir, senão usuário)
+    const nomeExibir = sessaoAtual.nome || sessaoAtual.usuario;
+    document.getElementById('topo-nome-usuario').textContent = '👤 ' + nomeExibir;
 
     // Mostra aba Usuários só para admin
     if (sessaoAtual.perfil === 'admin') {
@@ -84,14 +85,21 @@ function salvarUsuarios(lista) {
     localStorage.setItem('cv_usuarios', JSON.stringify(lista));
 }
 
+// Retorna lista de unidades cadastradas
+function carregarUnidades() {
+    return JSON.parse(localStorage.getItem('cv_unidades') || '[]');
+}
+
 function renderizarTabelaUsuarios() {
-    const usuarios = carregarUsuarios();
-    const el = document.getElementById('tabela-usuarios');
+    const usuarios  = carregarUsuarios();
+    const unidades  = carregarUnidades();
+    const el        = document.getElementById('tabela-usuarios');
 
     let html = `
         <div class="tabela-usuarios-header">
             <span>Nome</span>
             <span>Usuário</span>
+            <span>Loja</span>
             <span>Perfil</span>
             <span>Status</span>
             <span>Ações</span>
@@ -103,6 +111,14 @@ function renderizarTabelaUsuarios() {
             ? '<span class="badge-admin">Admin</span>'
             : '<span class="badge-colab">Colaborador</span>';
         const badgeEu = euMesmo ? '<span class="badge-eu">Você</span>' : '';
+
+        // Busca nome da loja vinculada
+        let nomeLoja = '—';
+        if (u.unidadeIdx !== undefined && u.unidadeIdx !== null && u.unidadeIdx !== '') {
+            const loja = unidades[u.unidadeIdx];
+            nomeLoja = loja ? loja.nome : '—';
+        }
+
         const acoes = euMesmo
             ? '<span style="font-size:0.75rem;color:#9ca3af">—</span>'
             : `<div class="acoes">
@@ -113,8 +129,9 @@ function renderizarTabelaUsuarios() {
 
         html += `
             <div class="usuario-item ${euMesmo ? 'eu' : ''}">
-                <div><strong>${u.usuario}</strong>${badgeEu}</div>
+                <div><strong>${u.nome || u.usuario}</strong>${badgeEu}</div>
                 <div style="color:#6b7280;font-size:0.82rem">${u.usuario}</div>
+                <div style="font-size:0.82rem;color:var(--text-secondary)">${nomeLoja}</div>
                 <div>${badgePerfil}</div>
                 <div><span style="color:#16a34a;font-size:0.78rem;font-weight:600">● Ativo</span></div>
                 <div>${acoes}</div>
@@ -124,23 +141,43 @@ function renderizarTabelaUsuarios() {
     el.innerHTML = html;
 }
 
+function popularSelectLojas(valorAtual) {
+    const sel = document.getElementById('mu-unidade');
+    if (!sel) return;
+    const unidades = carregarUnidades();
+    sel.innerHTML = '<option value="">— Sem loja vinculada —</option>';
+    unidades.forEach((u, idx) => {
+        const opt = document.createElement('option');
+        opt.value = idx;
+        opt.textContent = u.nome;
+        sel.appendChild(opt);
+    });
+    if (valorAtual !== undefined && valorAtual !== null && valorAtual !== '') {
+        sel.value = valorAtual;
+    }
+}
+
 function abrirModalUsuario(id) {
     idEditandoUsuario = id || null;
     const overlay = document.getElementById('overlay-modal-usuario');
     const modal   = document.getElementById('modal-usuario');
 
+    document.getElementById('mu-nome').value    = '';
     document.getElementById('mu-usuario').value = '';
     document.getElementById('mu-senha').value   = '';
     document.getElementById('mu-perfil').value  = 'colaborador';
+    popularSelectLojas('');
 
     if (idEditandoUsuario) {
         const usuarios = carregarUsuarios();
         const u = usuarios.find(x => x.id === id);
         if (u) {
             document.getElementById('modal-usuario-titulo').textContent = 'Editar usuário';
+            document.getElementById('mu-nome').value    = u.nome || '';
             document.getElementById('mu-usuario').value = u.usuario;
             document.getElementById('mu-perfil').value  = u.perfil;
             document.getElementById('mu-senha').placeholder = 'Deixe em branco para não alterar';
+            popularSelectLojas(u.unidadeIdx !== undefined ? u.unidadeIdx : '');
         }
     } else {
         document.getElementById('modal-usuario-titulo').textContent = 'Novo usuário';
@@ -149,7 +186,7 @@ function abrirModalUsuario(id) {
 
     overlay.classList.remove('escondido');
     modal.classList.remove('escondido');
-    document.getElementById('mu-usuario').focus();
+    document.getElementById('mu-nome').focus();
 }
 
 function fecharModalUsuario() {
@@ -163,11 +200,15 @@ function capitalizarPalavras(str) {
 }
 
 function salvarUsuario() {
+    const nome    = capitalizarPalavras(document.getElementById('mu-nome').value.trim());
     const usuario = capitalizarPalavras(document.getElementById('mu-usuario').value.trim());
     const senha   = document.getElementById('mu-senha').value;
     const perfil  = document.getElementById('mu-perfil').value;
+    const selLoja = document.getElementById('mu-unidade');
+    const unidadeIdx = selLoja && selLoja.value !== '' ? Number(selLoja.value) : null;
 
-    if (!usuario) { alert('⚠️ Informe o usuário de login!'); return; }
+    if (!nome)    { alert('⚠️ Informe o nome do colaborador!'); document.getElementById('mu-nome').focus(); return; }
+    if (!usuario) { alert('⚠️ Informe o usuário de login!'); document.getElementById('mu-usuario').focus(); return; }
 
     let usuarios = carregarUsuarios();
 
@@ -177,8 +218,10 @@ function salvarUsuario() {
     if (idEditandoUsuario) {
         const idx = usuarios.findIndex(u => u.id === idEditandoUsuario);
         if (idx !== -1) {
-            usuarios[idx].usuario = usuario;
-            usuarios[idx].perfil  = perfil;
+            usuarios[idx].nome       = nome;
+            usuarios[idx].usuario    = usuario;
+            usuarios[idx].perfil     = perfil;
+            usuarios[idx].unidadeIdx = unidadeIdx;
             if (senha) {
                 if (senha.length < 4) { alert('⚠️ A senha deve ter pelo menos 4 caracteres!'); return; }
                 usuarios[idx].senha = senha;
@@ -187,7 +230,7 @@ function salvarUsuario() {
     } else {
         if (!senha || senha.length < 4) { alert('⚠️ Defina uma senha com pelo menos 4 caracteres!'); return; }
         const novoId = Date.now();
-        usuarios.push({ id: novoId, usuario, senha, perfil });
+        usuarios.push({ id: novoId, nome, usuario, senha, perfil, unidadeIdx });
     }
 
     salvarUsuarios(usuarios);
@@ -199,7 +242,7 @@ function excluirUsuario(id) {
     let usuarios = carregarUsuarios();
     const u = usuarios.find(x => x.id === id);
     if (!u) return;
-    if (!confirm('Excluir o usuário "' + u.nome + '"? Esta ação não pode ser desfeita.')) return;
+    if (!confirm('Excluir o usuário "' + (u.nome || u.usuario) + '"? Esta ação não pode ser desfeita.')) return;
     usuarios = usuarios.filter(x => x.id !== id);
     salvarUsuarios(usuarios);
     renderizarTabelaUsuarios();
@@ -220,7 +263,7 @@ function abrirModalReset(id) {
     idResetandoUsuario = id;
 
     document.getElementById('reset-descricao').textContent =
-        u.nome + ' · @' + u.usuario;
+        (u.nome || u.usuario) + ' · @' + u.usuario;
     document.getElementById('reset-nova-senha').value      = '';
     document.getElementById('reset-confirmar-senha').value = '';
     document.getElementById('reset-msg-erro').classList.add('escondido');
@@ -274,11 +317,7 @@ function confirmarReset() {
     salvarUsuarios(usuarios);
     fecharModalReset();
 
-    // Feedback visual temporário
-    const el = document.querySelector(
-        `.usuario-item:not(.eu) .btn-reset[onclick="abrirModalReset(${idResetandoUsuario})"]`
-    );
-    alert('✅ Senha de "' + usuarios[idx].nome + '" redefinida com sucesso!');
+    alert('✅ Senha de "' + (usuarios[idx].nome || usuarios[idx].usuario) + '" redefinida com sucesso!');
 }
 
 // ============================================
@@ -330,11 +369,17 @@ function mudarAba(aba) {
     if (aba === 'usuarios')   renderizarTabelaUsuarios();
 }
 
-// ===== SELECT DE CATEGORIAS (no form de cadastro) =====
+// ===== FILTRO DE CATEGORIAS POR SESSÃO =====
+// Para colaborador: filtra por donoId E por loja (unidadeIdx)
 function categoriasDeSessao() {
     if (isAdmin()) return categorias;
-    // Colaborador vê apenas categorias atribuídas a ele
-    return categorias.filter(c => c.donoId === sessaoAtual.id);
+
+    // Colaborador: vê categorias atribuídas a ele
+    // Se o colaborador tiver loja vinculada, também filtra categorias dessa loja
+    return categorias.filter(c => {
+        const ehDono = c.donoId === sessaoAtual.id;
+        return ehDono;
+    });
 }
 
 function renderizarSelectCategorias() {
@@ -367,7 +412,8 @@ function renderizarGridCategorias() {
         return;
     }
 
-    const usuarios = carregarUsuarios();
+    const usuarios  = carregarUsuarios();
+    const unidades  = carregarUnidades();
 
     let html = '';
     lista.forEach(cat => {
@@ -387,9 +433,15 @@ function renderizarGridCategorias() {
         if (isAdmin()) {
             if (cat.donoId) {
                 const dono = usuarios.find(u => u.id === cat.donoId);
-                tagDono = dono
-                    ? `<span class="cat-tag-dono">👤 ${dono.nome}</span>`
-                    : '';
+                if (dono) {
+                    // Mostra nome do colaborador e loja
+                    let lojaTag = '';
+                    if (dono.unidadeIdx !== undefined && dono.unidadeIdx !== null) {
+                        const loja = unidades[dono.unidadeIdx];
+                        if (loja) lojaTag = ` · 🏪 ${loja.nome}`;
+                    }
+                    tagDono = `<span class="cat-tag-dono">👤 ${dono.nome || dono.usuario}${lojaTag}</span>`;
+                }
             } else {
                 tagDono = `<span class="cat-tag-dono cat-tag-sem-dono">⚠️ Sem colaborador</span>`;
             }
@@ -477,9 +529,9 @@ function renderizarListaPainel() {
 
         // Texto de dias restantes
         let diasTexto = '';
-        if (dias < 0)      diasTexto = `<span class="dias-texto vencido">${Math.abs(dias)}d atrás</span>`;
+        if (dias < 0)        diasTexto = `<span class="dias-texto vencido">${Math.abs(dias)}d atrás</span>`;
         else if (dias === 0) diasTexto = `<span class="dias-texto critico">Hoje!</span>`;
-        else               diasTexto = `<span class="dias-texto ${faixa}">${dias} dias</span>`;
+        else                 diasTexto = `<span class="dias-texto ${faixa}">${dias} dias</span>`;
 
         const badge = `<span class="badge ${cfg.classe}">${cfg.label}</span>`;
 
@@ -499,8 +551,7 @@ function renderizarListaPainel() {
 
     listaEl.innerHTML = html;
 
-    // Atualiza painel resumo: mostra urgentes
-    const urgentes = contadores.critico + contadores.alerta + contadores.vencido;
+    // Atualiza painel resumo
     document.getElementById('p-total').textContent    = lista.length;
     document.getElementById('p-aviso').textContent    = contadores.critico;
     document.getElementById('p-vencidos').textContent = contadores.alerta;
@@ -631,15 +682,21 @@ function abrirModalCategoria(idCat) {
     if (!isAdmin()) return; // apenas admin cria/renomeia categorias
     idEditandoCat = idCat || null;
 
-    // Popula select de colaboradores (só mostra na criação)
+    // Popula select de colaboradores
     const campoAtribuir = document.getElementById('campo-atribuir-colaborador');
     const selColab = document.getElementById('select-cat-colaborador');
     selColab.innerHTML = '<option value="">— Selecione um colaborador —</option>';
     const usuarios = carregarUsuarios().filter(u => u.perfil !== 'admin');
+    const unidades = carregarUnidades();
     usuarios.forEach(u => {
         const opt = document.createElement('option');
         opt.value = u.id;
-        opt.textContent = u.nome + ' (@' + u.usuario + ')';
+        let label = (u.nome || u.usuario) + ' (@' + u.usuario + ')';
+        if (u.unidadeIdx !== undefined && u.unidadeIdx !== null) {
+            const loja = unidades[u.unidadeIdx];
+            if (loja) label += ' · 🏪 ' + loja.nome;
+        }
+        opt.textContent = label;
         selColab.appendChild(opt);
     });
 
@@ -648,7 +705,6 @@ function abrirModalCategoria(idCat) {
         document.getElementById('modal-titulo').textContent    = 'Renomear categoria';
         document.getElementById('modal-descricao').textContent = 'Digite o novo nome para esta categoria.';
         inputCatNome.value = cat ? cat.nome : '';
-        // Na edição, mostra o dono atual mas permite trocar
         if (cat && cat.donoId) selColab.value = cat.donoId;
         campoAtribuir.style.display = 'block';
     } else {
@@ -917,7 +973,6 @@ function exportarExcel(modo, catIdDirecto, idsSelecao) {
     let nomeArquivo = '';
 
     if (modo === 'categoria' && categoriaAtual) {
-        // Exportar categoria atual (botão no painel)
         const cat    = categorias.find(c => c.id === categoriaAtual);
         const linhas = montarLinhas(categoriaAtual);
         if (linhas.length === 0) { alert('Esta categoria não tem produtos para exportar.'); return; }
@@ -927,7 +982,6 @@ function exportarExcel(modo, catIdDirecto, idsSelecao) {
         nomeArquivo = `Validade_${cat ? cat.nome : 'Categoria'}_${dataHoje.replace(/\//g,'-')}.xlsx`;
 
     } else if (modo === 'categoria-id' && catIdDirecto) {
-        // Exportar uma categoria específica pelo id (botão rápido na aba Exportar)
         const cat    = categorias.find(c => c.id === catIdDirecto);
         const linhas = montarLinhas(catIdDirecto);
         if (linhas.length === 0) { alert('Esta categoria não tem produtos para exportar.'); return; }
@@ -937,14 +991,12 @@ function exportarExcel(modo, catIdDirecto, idsSelecao) {
         nomeArquivo = `Validade_${cat ? cat.nome : 'Categoria'}_${dataHoje.replace(/\//g,'-')}.xlsx`;
 
     } else if (modo === 'selecao' && idsSelecao && idsSelecao.length > 0) {
-        // Exportar categorias selecionadas — uma aba cada + aba consolidada se > 1
         let todasLinhas = [];
         idsSelecao.forEach(id => {
             const linhas = adicionarAba(id);
             if (linhas) todasLinhas = todasLinhas.concat(linhas);
         });
         if (todasLinhas.length === 0) { alert('As categorias selecionadas não têm produtos.'); return; }
-        // Aba consolidada apenas se mais de uma categoria
         if (idsSelecao.length > 1) {
             const wsGeral = XLSX.utils.json_to_sheet(todasLinhas);
             aplicarEstilos(wsGeral, todasLinhas);
@@ -953,7 +1005,6 @@ function exportarExcel(modo, catIdDirecto, idsSelecao) {
         nomeArquivo = `Validade_Selecionadas_${dataHoje.replace(/\//g,'-')}.xlsx`;
 
     } else if (modo === 'tudo') {
-        // Todas as categorias
         let todasLinhas = [];
         categorias.forEach(cat => {
             const linhas = adicionarAba(cat.id);
@@ -975,17 +1026,11 @@ function aplicarEstilos(ws, linhas) {
 
     const range = XLSX.utils.decode_range(ws['!ref']);
 
-    // Larguras das colunas
     ws['!cols'] = [
-        { wch: 20 }, // Categoria
-        { wch: 22 }, // Cód. Barras
-        { wch: 38 }, // Produto
-        { wch: 14 }, // Validade
-        { wch: 16 }, // Dias Restantes
-        { wch: 16 }, // Status
+        { wch: 20 }, { wch: 22 }, { wch: 38 },
+        { wch: 14 }, { wch: 16 }, { wch: 16 },
     ];
 
-    // Altura das linhas
     const rows = [];
     for (let r = 0; r <= range.e.r; r++) rows.push({ hpt: r === 0 ? 24 : 18 });
     ws['!rows'] = rows;
@@ -1013,7 +1058,6 @@ function aplicarEstilos(ws, linhas) {
         right:  { style: 'medium', color: { rgb: 'FF1E3A5F' } },
     };
 
-    // === CABEÇALHO ===
     for (let c = range.s.c; c <= range.e.c; c++) {
         const addr = XLSX.utils.encode_cell({ r: 0, c });
         if (!ws[addr]) ws[addr] = { t: 's', v: '' };
@@ -1025,7 +1069,6 @@ function aplicarEstilos(ws, linhas) {
         };
     }
 
-    // === LINHAS DE DADOS ===
     for (let r = 1; r <= range.e.r; r++) {
         const statusCell = ws[XLSX.utils.encode_cell({ r, c: 5 })];
         const statusVal  = statusCell ? statusCell.v : '';
