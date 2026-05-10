@@ -173,23 +173,27 @@ html, body {
     margin: 0 auto;
     padding: 0 1.5rem;
     gap: 0;
+    align-items: flex-start;
 }
 
 /* ===== SIDEBAR DE NAVEGAÇÃO (ESQUERDA) ===== */
 .sidebar-nav {
-    width: 140px;
+    width: 148px;
     flex-shrink: 0;
     position: sticky;
     top: 52px;
     height: calc(100vh - 52px);
     display: flex;
-    align-items: center;
-    padding-right: 0.5rem;
+    align-items: flex-start;
+    padding-right: 0.75rem;
+    padding-top: 1.25rem;
+    z-index: 10;
 }
 
 .conteudo-principal {
     flex: 1;
     min-width: 0;
+    padding-top: 1.25rem;
 }
 
 /* Removemos o padding lateral do secao-inner pois já está no layout */
@@ -259,7 +263,7 @@ html, body {
 .secao-inner {
     max-width: 100%;
     margin: 0;
-    padding: 1.25rem 0 2rem;
+    padding: 0 0 2rem;
 }
 
 /* ===== TÍTULO DE SEÇÃO ===== */
