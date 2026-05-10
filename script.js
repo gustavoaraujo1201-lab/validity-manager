@@ -289,7 +289,6 @@ function abrirModalReset(id) {
         return;
     }
     if (!isAdmin()) { alert('⛔ Apenas administradores podem redefinir senhas.'); return; }
-    const usuarios = carregarUsuarios();
     const u = usuarios.find(x => x.id === id);
     if (!u) return;
 
