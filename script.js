@@ -549,6 +549,7 @@ function renderizarListaPainel() {
             <span>Cód. Barras</span>
             <span>Produto</span>
             <span>Validade</span>
+            <span>Qtd.</span>
             <span>Dias Rest.</span>
             <span>Status</span>
             <span>Ações</span>
@@ -573,6 +574,7 @@ function renderizarListaPainel() {
                 <div class="produto-codigo-col">${produto.codigo}</div>
                 <div class="produto-nome-col">${produto.nome}</div>
                 <div class="produto-data-col">${formatarData(produto.validade)}</div>
+                <div class="produto-qtd-col"><span class="badge-qtd">${produto.quantidade || 1}</span></div>
                 <div class="produto-dias-col">${diasTexto}</div>
                 <div>${badge}</div>
                 <div class="acoes">

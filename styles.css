@@ -637,7 +637,7 @@ select:focus {
 /* 6 colunas: Cód.Barras | Produto | Validade | Dias | Status | Ações */
 .cabecalho-lista {
     display: grid;
-    grid-template-columns: 1.4fr 2fr 1fr 0.85fr 1.3fr 72px;
+    grid-template-columns: 1.4fr 2fr 1fr 0.6fr 0.85fr 1.3fr 72px;
     gap: 8px;
     padding: 0 8px 8px;
     border-bottom: 2px solid var(--border-color);
@@ -653,7 +653,7 @@ select:focus {
 
 .produto-item {
     display: grid;
-    grid-template-columns: 1.4fr 2fr 1fr 0.85fr 1.3fr 72px;
+    grid-template-columns: 1.4fr 2fr 1fr 0.6fr 0.85fr 1.3fr 72px;
     gap: 8px;
     align-items: center;
     padding: 9px 8px;
@@ -1187,4 +1187,19 @@ select:focus {
     border-color: #7f1d1d;
     border-left-color: #ef4444;
     color: #f87171;
+}
+
+/* ── Coluna quantidade ───────────────────────────────────────── */
+.produto-qtd-col { text-align: center; }
+.badge-qtd {
+    display: inline-block;
+    background: var(--bg-card);
+    border: 1.5px solid var(--border-color);
+    border-radius: 20px;
+    padding: 2px 10px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    min-width: 32px;
+    text-align: center;
 }
