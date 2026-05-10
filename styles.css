@@ -164,23 +164,63 @@ html, body {
     white-space: nowrap;
 }
 
+/* ===== LAYOUT PRINCIPAL ===== */
+.layout-principal {
+    display: flex;
+    flex-direction: row-reverse; /* sidebar à direita */
+    min-height: calc(100vh - 52px);
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+    gap: 0;
+}
+
+/* ===== SIDEBAR DE NAVEGAÇÃO (DIREITA) ===== */
+.sidebar-nav {
+    width: 140px;
+    flex-shrink: 0;
+    position: sticky;
+    top: 52px;
+    height: calc(100vh - 52px);
+    display: flex;
+    align-items: flex-start;
+    padding-top: 1.25rem;
+    padding-left: 1rem;
+    border-left: 1px solid var(--border-color);
+    transition: border-color 0.3s;
+}
+
+.conteudo-principal {
+    flex: 1;
+    min-width: 0;
+}
+
+/* Removemos o padding lateral do secao-inner pois já está no layout */
+.conteudo-principal .secao-inner {
+    max-width: 100%;
+    margin: 0;
+    padding-left: 0;
+    padding-right: 0;
+}
+
 .abas {
     display: flex;
-    gap: 2px;
-    background: var(--bg-abas);
+    flex-direction: column;
+    gap: 4px;
+    background: transparent;
     border-radius: 10px;
-    padding: 3px;
+    padding: 4px;
     transition: background 0.3s;
-    flex-shrink: 0;
+    width: 100%;
 }
 
 .aba {
     display: flex;
     align-items: center;
-    gap: 5px;
-    padding: 6px 11px;
+    gap: 7px;
+    padding: 9px 12px;
     border: none;
-    border-radius: 7px;
+    border-radius: 8px;
     background: none;
     font-size: 0.82rem;
     font-weight: 500;
@@ -188,6 +228,8 @@ html, body {
     cursor: pointer;
     transition: all 0.15s;
     white-space: nowrap;
+    width: 100%;
+    text-align: left;
 }
 
 .aba:hover { background: var(--bg-aba-hover); color: var(--text-primary); }
@@ -218,9 +260,9 @@ html, body {
 .secao.ativa { display: block; }
 
 .secao-inner {
-    max-width: 1100px;
-    margin: 0 auto;
-    padding: 1.25rem 1.5rem 2rem;
+    max-width: 100%;
+    margin: 0;
+    padding: 1.25rem 0 2rem;
 }
 
 /* ===== TÍTULO DE SEÇÃO ===== */
@@ -874,9 +916,29 @@ select:focus {
 
 @media (max-width: 640px) {
     .topo-inner { flex-wrap: wrap; gap: 0.4rem; padding: 0.5rem 1rem; height: auto; }
-    .abas       { width: 100%; order: 3; }
-    .aba        { flex: 1; justify-content: center; }
     .topo-titulo { font-size: 1.1rem; }
+
+    .layout-principal {
+        flex-direction: column;
+        padding: 0 1rem;
+    }
+
+    .sidebar-nav {
+        width: 100%;
+        position: static;
+        height: auto;
+        border-left: none;
+        border-bottom: 1px solid var(--border-color);
+        padding: 0.5rem 0;
+        padding-left: 0;
+    }
+
+    .abas {
+        flex-direction: row;
+        overflow-x: auto;
+    }
+
+    .aba { flex: 1; justify-content: center; white-space: nowrap; }
 
     .resumo-global { grid-template-columns: 1fr 1fr; }
     .campo-grupo.dois { grid-template-columns: 1fr; }
