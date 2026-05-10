@@ -36,6 +36,10 @@
                 <span class="aba-icone">➕</span>
                 <span>Cadastro Produtos</span>
             </button>
+            <button class="aba" id="aba-unidade" onclick="mudarAba('unidade')">
+                <span class="aba-icone">🏪</span>
+                <span>Cad. Unidade</span>
+            </button>
             <button class="aba" id="aba-categorias" onclick="mudarAba('categorias')">
                 <span class="aba-icone">📂</span>
                 <span>Categorias</span>
@@ -130,6 +134,23 @@
                 </div>
             </div>
 
+        </div>
+    </section>
+
+    <!-- SEÇÃO UNIDADE: CADASTRO DE UNIDADES/LOJAS -->
+    <section id="secao-unidade" class="secao">
+        <div class="secao-inner">
+            <div class="secao-titulo-row">
+                <div>
+                    <h2>Cadastro de Unidades</h2>
+                    <p>Cadastre as lojas ou filiais que utilizam o sistema</p>
+                </div>
+                <button class="btn-nova-categoria" onclick="abrirModalUnidade()">+ Nova unidade</button>
+            </div>
+
+            <div id="lista-unidades" class="card" style="padding: 1rem;">
+                <p class="lista-vazia">Nenhuma unidade cadastrada ainda.</p>
+            </div>
         </div>
     </section>
 
@@ -283,6 +304,92 @@
             <button class="btn-modal-salvar btn-reset-salvar" onclick="confirmarReset()">Redefinir senha</button>
         </div>
     </div>
+
+    <!-- MODAL Unidade -->
+    <div id="overlay-modal-unidade" class="overlay-modal escondido" onclick="fecharModalUnidade()"></div>
+    <div id="modal-unidade" class="modal escondido">
+        <h3>🏪 Nova Unidade</h3>
+        <p class="modal-descricao">Cadastre uma loja ou filial que utiliza o sistema.</p>
+        <label for="input-unidade-nome">Nome da unidade</label>
+        <input type="text" id="input-unidade-nome" placeholder="Ex: Loja Centro, Filial Norte..." maxlength="40">
+        <label for="input-unidade-endereco" style="margin-top:0.75rem">Endereço (opcional)</label>
+        <input type="text" id="input-unidade-endereco" placeholder="Ex: Rua das Flores, 123" maxlength="80">
+        <label for="input-unidade-responsavel" style="margin-top:0.75rem">Responsável (opcional)</label>
+        <input type="text" id="input-unidade-responsavel" placeholder="Ex: João Silva" maxlength="40">
+        <div class="modal-acoes" style="margin-top:1rem">
+            <button class="btn-modal-cancelar" onclick="fecharModalUnidade()">Cancelar</button>
+            <button class="btn-modal-salvar" onclick="salvarUnidade()">Salvar</button>
+        </div>
+    </div>
+
+    <script>
+    // ===== CADASTRO DE UNIDADES =====
+    function carregarUnidades() {
+        const unidades = JSON.parse(localStorage.getItem('cv_unidades') || '[]');
+        const lista = document.getElementById('lista-unidades');
+        if (!lista) return;
+        if (unidades.length === 0) {
+            lista.innerHTML = '<p class="lista-vazia">Nenhuma unidade cadastrada ainda.</p>';
+            return;
+        }
+        lista.innerHTML = unidades.map((u, i) => `
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:0.75rem 0;border-bottom:1px solid var(--border-color);">
+                <div>
+                    <strong style="color:var(--text-primary);font-size:0.95rem">🏪 ${u.nome}</strong>
+                    ${u.endereco ? `<div style="font-size:0.8rem;color:var(--text-secondary);margin-top:2px">📍 ${u.endereco}</div>` : ''}
+                    ${u.responsavel ? `<div style="font-size:0.8rem;color:var(--text-secondary)">👤 ${u.responsavel}</div>` : ''}
+                </div>
+                <button onclick="excluirUnidade(${i})" style="background:none;border:1px solid #dc2626;color:#dc2626;border-radius:6px;padding:4px 10px;cursor:pointer;font-size:0.78rem;">Excluir</button>
+            </div>
+        `).join('');
+    }
+
+    function abrirModalUnidade() {
+        document.getElementById('input-unidade-nome').value = '';
+        document.getElementById('input-unidade-endereco').value = '';
+        document.getElementById('input-unidade-responsavel').value = '';
+        document.getElementById('overlay-modal-unidade').classList.remove('escondido');
+        document.getElementById('modal-unidade').classList.remove('escondido');
+        document.getElementById('input-unidade-nome').focus();
+    }
+
+    function fecharModalUnidade() {
+        document.getElementById('overlay-modal-unidade').classList.add('escondido');
+        document.getElementById('modal-unidade').classList.add('escondido');
+    }
+
+    function salvarUnidade() {
+        const nome = document.getElementById('input-unidade-nome').value.trim();
+        if (!nome) { alert('Informe o nome da unidade.'); return; }
+        const endereco = document.getElementById('input-unidade-endereco').value.trim();
+        const responsavel = document.getElementById('input-unidade-responsavel').value.trim();
+        const unidades = JSON.parse(localStorage.getItem('cv_unidades') || '[]');
+        unidades.push({ nome, endereco, responsavel });
+        localStorage.setItem('cv_unidades', JSON.stringify(unidades));
+        fecharModalUnidade();
+        carregarUnidades();
+    }
+
+    function excluirUnidade(idx) {
+        if (!confirm('Excluir esta unidade?')) return;
+        const unidades = JSON.parse(localStorage.getItem('cv_unidades') || '[]');
+        unidades.splice(idx, 1);
+        localStorage.setItem('cv_unidades', JSON.stringify(unidades));
+        carregarUnidades();
+    }
+
+    // Carregar ao trocar para aba unidade
+    const _mudarAbaOriginal = typeof mudarAba === 'function' ? mudarAba : null;
+    document.addEventListener('DOMContentLoaded', function() {
+        // Patch mudarAba para carregar unidades quando necessário
+        const btnUnidade = document.getElementById('aba-unidade');
+        if (btnUnidade) {
+            btnUnidade.addEventListener('click', function() {
+                setTimeout(carregarUnidades, 50);
+            });
+        }
+    });
+    </script>
 
     <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
     <script src="script.js"></script>
