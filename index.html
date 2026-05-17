@@ -54,6 +54,10 @@
                     <span class="aba-icone">📂</span>
                     <span>Categorias</span>
                 </button>
+                <button class="aba aba-admin escondido" id="aba-importar" onclick="mudarAba('importar')">
+                    <span class="aba-icone">📥</span>
+                    <span>Importar Excel</span>
+                </button>
                 <button class="aba aba-admin escondido" id="aba-usuarios" onclick="mudarAba('usuarios')">
                     <span class="aba-icone">👥</span>
                     <span>Usuários</span>
@@ -247,7 +251,54 @@
                 </div>
             </section>
 
-        </div><!-- /conteudo-principal -->
+            <!-- SEÇÃO 4: IMPORTAR EXCEL (admin only) -->
+            <section id="secao-importar" class="secao">
+                <div class="secao-inner">
+                    <div class="secao-titulo-row">
+                        <div>
+                            <h2>Importar Excel</h2>
+                            <p>Importe produtos em lote a partir de um arquivo .xlsx com colunas: <strong>Descrição</strong>, <strong>Classificação</strong> e <strong>Fabricante</strong></p>
+                        </div>
+                    </div>
+
+                    <!-- Drop zone -->
+                    <div id="import-dropzone" class="import-dropzone" onclick="document.getElementById('import-file-input').click()" ondragover="importDragOver(event)" ondragleave="importDragLeave(event)" ondrop="importDrop(event)">
+                        <div class="import-dropzone-icon">📂</div>
+                        <p class="import-dropzone-texto">Clique aqui ou arraste o arquivo <strong>.xlsx</strong></p>
+                        <p class="import-dropzone-sub">Estrutura esperada: Descrição | Classificação | Fabricante</p>
+                        <input type="file" id="import-file-input" accept=".xlsx,.xls" style="display:none" onchange="importLerArquivo(this)">
+                    </div>
+
+                    <!-- Mapeamento de categorias -->
+                    <div id="import-mapeamento-area" class="escondido">
+                        <div class="card" style="margin-bottom:1rem;padding:1.2rem 1.5rem;">
+                            <h3 style="margin:0 0 .5rem">📋 Arquivo carregado</h3>
+                            <p id="import-resumo-arquivo" style="margin:0;opacity:.7;font-size:.9rem"></p>
+                        </div>
+
+                        <div class="card" style="padding:1.5rem;">
+                            <h3 style="margin:0 0 1rem">🔗 Mapeamento de categorias</h3>
+                            <p style="font-size:.875rem;opacity:.7;margin:0 0 1rem">Para cada classificação encontrada no arquivo, escolha a categoria do sistema (ou crie uma nova).</p>
+                            <div id="import-mapeamento-lista"></div>
+                        </div>
+
+                        <div style="display:flex;gap:.75rem;margin-top:1rem;flex-wrap:wrap;">
+                            <button class="btn-nova-categoria" onclick="importConfirmar()" id="btn-import-confirmar">✅ Importar produtos</button>
+                            <button class="btn-exportar" onclick="importCancelar()" style="background:transparent;border:1px solid var(--borda);color:var(--texto);">✖ Cancelar</button>
+                        </div>
+                    </div>
+
+                    <!-- Log de resultado -->
+                    <div id="import-resultado" class="escondido card" style="padding:1.5rem;margin-top:1rem;">
+                        <h3 style="margin:0 0 .75rem">📊 Resultado da importação</h3>
+                        <div id="import-resultado-corpo"></div>
+                        <button class="btn-nova-categoria" onclick="importNovaImportacao()" style="margin-top:1rem">+ Nova importação</button>
+                    </div>
+
+                </div>
+            </section>
+
+
     </div><!-- /layout-principal -->
 
     <!-- MODAL categoria -->

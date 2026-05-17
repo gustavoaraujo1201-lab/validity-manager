@@ -400,6 +400,7 @@ function mudarAba(aba) {
     if (aba === 'cadastro')   renderizarSelectCategorias();
     if (aba === 'exportar')   renderizarGridExport();
     if (aba === 'usuarios')   renderizarTabelaUsuarios();
+    if (aba === 'importar')   importarResetar();
 }
 
 // ===== FILTRO DE CATEGORIAS POR SESSÃO =====
@@ -1204,3 +1205,206 @@ document.addEventListener('DOMContentLoaded', function() {
     renderizarSelectCategorias();
     atualizarResumoGlobal();
 });
+
+// ============================================
+// IMPORTAÇÃO DE EXCEL
+// ============================================
+
+let importDados = [];          // linhas lidas do xlsx
+let importClassificacoes = []; // valores únicos de Classificação
+
+function importarResetar() {
+    importDados = [];
+    importClassificacoes = [];
+    _show('import-dropzone');
+    _hide('import-mapeamento-area');
+    _hide('import-resultado');
+    const fi = document.getElementById('import-file-input');
+    if (fi) fi.value = '';
+}
+
+function _show(id) { const el = document.getElementById(id); if (el) el.classList.remove('escondido'); }
+function _hide(id) { const el = document.getElementById(id); if (el) el.classList.add('escondido'); }
+
+function importDragOver(e) {
+    e.preventDefault();
+    document.getElementById('import-dropzone').classList.add('import-dropzone--over');
+}
+function importDragLeave(e) {
+    document.getElementById('import-dropzone').classList.remove('import-dropzone--over');
+}
+function importDrop(e) {
+    e.preventDefault();
+    importDragLeave(e);
+    const file = e.dataTransfer.files[0];
+    if (file) importProcessarArquivo(file);
+}
+function importLerArquivo(input) {
+    if (input.files && input.files[0]) importProcessarArquivo(input.files[0]);
+}
+
+function importProcessarArquivo(file) {
+    if (!file.name.match(/\.(xlsx|xls)$/i)) {
+        alert('⚠️ Apenas arquivos .xlsx ou .xls são suportados.');
+        return;
+    }
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const wb = XLSX.read(e.target.result, { type: 'array' });
+            const ws = wb.Sheets[wb.SheetNames[0]];
+            const rows = XLSX.utils.sheet_to_json(ws, { defval: '' });
+
+            if (!rows.length) { alert('⚠️ Planilha vazia ou sem dados.'); return; }
+
+            // Normaliza cabeçalhos: aceita variações com acento / maiúscula
+            const normalizar = s => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+            const chaves = Object.keys(rows[0]);
+            const findKey = (termo) => chaves.find(k => normalizar(k) === normalizar(termo)) || null;
+
+            const kDesc  = findKey('Descricao') || findKey('Descrição') || findKey('descricao') || findKey('nome') || findKey('produto');
+            const kClass = findKey('Classificacao') || findKey('Classificação') || findKey('classificacao') || findKey('categoria');
+            const kFab   = findKey('Fabricante') || findKey('fabricante');
+
+            if (!kDesc || !kClass) {
+                alert('⚠️ Não encontrei as colunas "Descrição" e "Classificação" na planilha.\n\nColunas encontradas: ' + chaves.join(', '));
+                return;
+            }
+
+            importDados = rows.map(r => ({
+                nome: String(r[kDesc] || '').trim(),
+                classificacao: String(r[kClass] || '').trim(),
+                fabricante: kFab ? String(r[kFab] || '').trim() : ''
+            })).filter(r => r.nome && r.classificacao);
+
+            // Valores únicos de classificação
+            importClassificacoes = [...new Set(importDados.map(r => r.classificacao))].sort();
+
+            document.getElementById('import-resumo-arquivo').textContent =
+                `${file.name} — ${importDados.length} produtos encontrados em ${importClassificacoes.length} classificação(ões)`;
+
+            importRenderizarMapeamento();
+            _hide('import-dropzone');
+            _show('import-mapeamento-area');
+            _hide('import-resultado');
+
+        } catch(err) {
+            alert('❌ Erro ao ler o arquivo: ' + err.message);
+        }
+    };
+    reader.readAsArrayBuffer(file);
+}
+
+function importRenderizarMapeamento() {
+    const lista = document.getElementById('import-mapeamento-lista');
+    lista.innerHTML = '';
+
+    const opcoesSelect = categorias.map(c =>
+        `<option value="${c.id}">${c.nome}</option>`
+    ).join('');
+
+    importClassificacoes.forEach(cls => {
+        const qtd = importDados.filter(r => r.classificacao === cls).length;
+        // tenta sugerir categoria pelo nome
+        const sugestao = categorias.find(c =>
+            cls.toLowerCase().includes(c.nome.toLowerCase()) ||
+            c.nome.toLowerCase().includes(cls.toLowerCase().split('>').pop().trim())
+        );
+
+        const row = document.createElement('div');
+        row.className = 'import-map-row';
+        row.innerHTML = `
+            <div class="import-map-cls">
+                <span class="import-map-label">${cls}</span>
+                <span class="import-map-qtd">${qtd} produto${qtd !== 1 ? 's' : ''}</span>
+            </div>
+            <div class="import-map-arrow">→</div>
+            <div class="import-map-dest">
+                <select class="import-cat-select" data-cls="${cls.replace(/"/g,'&quot;')}">
+                    <option value="">— ignorar —</option>
+                    ${opcoesSelect}
+                </select>
+            </div>`;
+        lista.appendChild(row);
+
+        // aplica sugestão automática
+        const sel = row.querySelector('select');
+        if (sugestao) sel.value = sugestao.id;
+    });
+}
+
+function importConfirmar() {
+    const selects = document.querySelectorAll('.import-cat-select');
+    const mapa = {};
+    selects.forEach(sel => {
+        const cls = sel.getAttribute('data-cls');
+        if (sel.value) mapa[cls] = sel.value;
+    });
+
+    const clsMapeadas = Object.keys(mapa);
+    if (!clsMapeadas.length) {
+        alert('⚠️ Mapeie ao menos uma classificação para uma categoria antes de importar.');
+        return;
+    }
+
+    let totalImportados = 0;
+    let totalDuplicatas = 0;
+    let totalIgnorados  = 0;
+    const porCategoria  = {};
+
+    importDados.forEach(row => {
+        const catId = mapa[row.classificacao];
+        if (!catId) { totalIgnorados++; return; }
+
+        if (!produtos[catId]) produtos[catId] = [];
+
+        // Verifica duplicata (mesmo nome, sem validade definida)
+        const dupl = produtos[catId].find(p =>
+            p.nome.trim().toLowerCase() === row.nome.toLowerCase()
+        );
+        if (dupl) {
+            totalDuplicatas++;
+            return;
+        }
+
+        const nomeCategoria = (categorias.find(c => c.id == catId) || {}).nome || catId;
+        produtos[catId].push({
+            id: Date.now() + Math.random(),
+            codigo: '',
+            nome: row.nome,
+            validade: '',         // sem validade → usuário preenche depois
+            quantidade: 1,
+            fabricante: row.fabricante
+        });
+        totalImportados++;
+        porCategoria[nomeCategoria] = (porCategoria[nomeCategoria] || 0) + 1;
+    });
+
+    salvarDados();
+
+    // Monta relatório
+    let relatorio = `<p><strong>${totalImportados}</strong> produto(s) importado(s) com sucesso.</p>`;
+    if (totalDuplicatas) relatorio += `<p style="color:var(--amarelo,#f59e0b)">⚠️ ${totalDuplicatas} produto(s) ignorado(s) por já existirem na categoria.</p>`;
+    if (totalIgnorados)  relatorio += `<p style="opacity:.6">ℹ️ ${totalIgnorados} linha(s) ignorada(s) (classificação não mapeada).</p>`;
+
+    if (Object.keys(porCategoria).length) {
+        relatorio += '<ul style="margin:.75rem 0 0;padding-left:1.25rem">';
+        Object.entries(porCategoria).forEach(([cat, n]) => {
+            relatorio += `<li>${cat}: <strong>${n}</strong> produto(s)</li>`;
+        });
+        relatorio += '</ul>';
+    }
+
+    document.getElementById('import-resultado-corpo').innerHTML = relatorio;
+    _hide('import-mapeamento-area');
+    _show('import-resultado');
+    atualizarResumoGlobal();
+}
+
+function importCancelar() {
+    importarResetar();
+}
+
+function importNovaImportacao() {
+    importarResetar();
+}

@@ -1203,3 +1203,83 @@ select:focus {
     min-width: 32px;
     text-align: center;
 }
+
+/* ============================================
+   IMPORTAÇÃO DE EXCEL
+   ============================================ */
+
+.import-dropzone {
+    border: 2px dashed var(--borda, #334155);
+    border-radius: 12px;
+    padding: 3rem 2rem;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color .2s, background .2s;
+    background: var(--card, #1e293b);
+    margin-bottom: 1.5rem;
+}
+.import-dropzone:hover,
+.import-dropzone--over {
+    border-color: var(--azul, #3b82f6);
+    background: rgba(59,130,246,.06);
+}
+.import-dropzone-icon {
+    font-size: 2.5rem;
+    margin-bottom: .75rem;
+    pointer-events: none;
+}
+.import-dropzone-texto {
+    font-size: 1rem;
+    margin: 0 0 .3rem;
+    pointer-events: none;
+}
+.import-dropzone-sub {
+    font-size: .8rem;
+    opacity: .55;
+    margin: 0;
+    pointer-events: none;
+}
+
+/* Linhas de mapeamento */
+.import-map-row {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    padding: .65rem 0;
+    border-bottom: 1px solid var(--borda, #334155);
+    flex-wrap: wrap;
+}
+.import-map-row:last-child { border-bottom: none; }
+
+.import-map-cls {
+    flex: 1 1 200px;
+    min-width: 0;
+}
+.import-map-label {
+    display: block;
+    font-size: .85rem;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.import-map-qtd {
+    font-size: .75rem;
+    opacity: .55;
+}
+.import-map-arrow {
+    opacity: .4;
+    font-size: 1.1rem;
+}
+.import-map-dest {
+    flex: 0 0 220px;
+}
+.import-cat-select {
+    width: 100%;
+    padding: .45rem .75rem;
+    border-radius: 8px;
+    border: 1px solid var(--borda, #334155);
+    background: var(--fundo, #0f172a);
+    color: var(--texto, #e2e8f0);
+    font-size: .875rem;
+}
