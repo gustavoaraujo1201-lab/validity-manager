@@ -47,13 +47,13 @@
                     <span>Cadastro Produtos</span>
                 </button>
                 <button class="aba" id="aba-proxvalidade" onclick="mudarAba('proxvalidade')">
-                    <span class="aba-icone">⏰</span>
-                    <span>Próx. Validade</span>
+                    <span class="aba-icone">📦</span>
+                    <span>Contagem Produtos</span>
                     <span id="badge-prox-val" class="nav-badge escondido"></span>
                 </button>
                 <button class="aba" id="aba-categorias" onclick="mudarAba('categorias')">
                     <span class="aba-icone">📂</span>
-                    <span>Categorias</span>
+                    <span>Classificação</span>
                 </button>
                 <button class="aba aba-admin escondido" id="aba-unidade" onclick="mudarAba('unidade')">
                     <span class="aba-icone">🏪</span>
@@ -171,16 +171,61 @@
                 </div>
             </section>
 
-            <!-- SEÇÃO: PRÓXIMOS A VENCER -->
+            <!-- SEÇÃO: CONTAGEM DE PRODUTOS -->
             <section id="secao-proxvalidade" class="secao">
                 <div class="secao-inner">
                     <div class="secao-titulo-row">
                         <div>
-                            <h2>⏰ Próximos a Vencer</h2>
-                            <p>Produtos com validade nos próximos 12 meses, ordenados por urgência</p>
+                            <h2>📦 Contagem de Produtos</h2>
+                            <p>Bipe o código de barras ou digite o nome para encontrar o produto e lançar validade e quantidade</p>
                         </div>
-                        <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap">
-                            <select id="filtro-prox-faixa" onchange="renderizarProxValidade()" style="padding:.4rem .75rem;border-radius:8px;border:1px solid var(--borda);background:var(--fundo);color:var(--texto);font-size:.85rem">
+
+                    </div>
+
+                    <!-- Busca de produto para contagem -->
+                    <div class="card-form" style="margin-bottom:1.25rem">
+                        <div class="campo-grupo full">
+                            <label for="contagem-busca">🔍 Buscar produto (código de barras ou nome)</label>
+                            <input type="text" id="contagem-busca" placeholder="Bipe o código ou digite o nome do produto..." autocomplete="off"
+                                oninput="contagemBuscar(this.value)" style="font-size:1rem">
+                        </div>
+                        <!-- Resultado da busca -->
+                        <div id="contagem-resultado-busca" style="display:none;margin-top:.75rem"></div>
+                        <!-- Formulário de lançamento (aparece após selecionar produto) -->
+                        <div id="contagem-form" style="display:none;margin-top:1rem">
+                            <div style="background:var(--card);border:1px solid var(--borda);border-radius:10px;padding:1rem 1.25rem;margin-bottom:1rem">
+                                <p style="margin:0 0 .25rem;font-size:.8rem;opacity:.6">PRODUTO SELECIONADO</p>
+                                <p id="contagem-prod-nome" style="margin:0;font-weight:700;font-size:1rem"></p>
+                                <p id="contagem-prod-fab" style="margin:.2rem 0 0;font-size:.8rem;opacity:.6"></p>
+                            </div>
+                            <div class="campo-grupo dois">
+                                <div>
+                                    <label for="contagem-validade">📅 Data de validade</label>
+                                    <input type="date" id="contagem-validade">
+                                </div>
+                                <div>
+                                    <label for="contagem-quantidade">🔢 Quantidade</label>
+                                    <input type="number" id="contagem-quantidade" min="1" value="1">
+                                </div>
+                            </div>
+                            <div class="form-acoes" style="margin-top:.75rem">
+                                <button class="btn-principal" onclick="contagemLancar()">✅ Lançar contagem</button>
+                                <button class="btn-cancelar" onclick="contagemCancelar()">✕ Cancelar</button>
+                            </div>
+                            <div id="contagem-banner-erro" class="banner-erro-vencido escondido" style="margin-top:.75rem">
+                                <span class="erro-vencido-icone">🚫</span>
+                                <div class="erro-vencido-texto">
+                                    <strong id="contagem-erro-msg">Produto vencido — não permitido</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Separador e título da lista de próximos a vencer -->
+                    <div style="display:flex;align-items:center;gap:.75rem;margin:.25rem 0 1rem;flex-wrap:wrap">
+                        <h3 style="margin:0;font-size:1rem;font-weight:600;opacity:.8">⏰ Próximos a vencer</h3>
+                        <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+                            <select id="filtro-prox-faixa" onchange="renderizarProxValidade()" style="padding:.35rem .65rem;border-radius:8px;border:1px solid var(--borda);background:var(--fundo);color:var(--texto);font-size:.82rem">
                                 <option value="todos">Todas as faixas</option>
                                 <option value="critico">🔴 &lt; 3 meses</option>
                                 <option value="alerta">🟠 3–6 meses</option>
@@ -188,8 +233,8 @@
                                 <option value="proximo">🔵 9–12 meses</option>
                                 <option value="vencido">✗ Vencidos</option>
                             </select>
-                            <select id="filtro-prox-cat" onchange="renderizarProxValidade()" style="padding:.4rem .75rem;border-radius:8px;border:1px solid var(--borda);background:var(--fundo);color:var(--texto);font-size:.85rem">
-                                <option value="">Todas as categorias</option>
+                            <select id="filtro-prox-cat" onchange="renderizarProxValidade()" style="padding:.35rem .65rem;border-radius:8px;border:1px solid var(--borda);background:var(--fundo);color:var(--texto);font-size:.82rem">
+                                <option value="">Todas as classificações</option>
                             </select>
                         </div>
                     </div>
@@ -225,8 +270,8 @@
 
                     <div class="secao-titulo-row">
                         <div>
-                            <h2>Categorias</h2>
-                            <p>Clique em uma categoria para ver os produtos cadastrados</p>
+                            <h2>Classificação</h2>
+                            <p>Clique em uma classificação para ver os produtos e próximos a vencer</p>
                         </div>
                         <button class="btn-nova-categoria" onclick="abrirModalCategoria()">
                             + Nova categoria

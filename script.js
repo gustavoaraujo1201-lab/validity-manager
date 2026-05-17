@@ -734,14 +734,11 @@ function editarProduto(id) {
     // Muda para aba de cadastro
     mudarAba('cadastro');
 
-    // Preenche o formulário
+    // Preenche o formulário (edição do cadastro — sem validade/quantidade)
     selectCategoria.value   = categoriaAtual;
     if (inputCodigo) inputCodigo.value = produto.codigo || '';
     inputNome.value         = produto.nome;
     if (inputFabricante) inputFabricante.value = produto.fabricante || '';
-    inputValidade.value     = produto.validade;
-    const _iqtd = document.getElementById('input-quantidade');
-    if (_iqtd) _iqtd.value = produto.quantidade || 1;
     preencherClassificacao();
 
     idEditando = id;
@@ -766,61 +763,39 @@ function removerProduto(id) {
     abrirPainel(categoriaAtual);
 }
 
-// ===== SALVAR PRODUTO =====
+// ===== SALVAR PRODUTO (Cadastro — sem validade/quantidade) =====
 function salvarProduto() {
-    const catId       = selectCategoria.value;
-    const codigo      = inputCodigo ? inputCodigo.value.trim() : '';
-    const nome        = inputNome.value.trim();
-    const fabricante  = inputFabricante ? inputFabricante.value.trim() : '';
-    const validade    = inputValidade.value;
+    const catId      = selectCategoria.value;
+    const codigo     = inputCodigo ? inputCodigo.value.trim() : '';
+    const nome       = inputNome.value.trim();
+    const fabricante = inputFabricante ? inputFabricante.value.trim() : '';
 
-    if (!catId)   { alert('⚠️ Selecione uma categoria!'); selectCategoria.focus(); return; }
-    if (!nome)    { alert('⚠️ Informe a descrição do produto!'); inputNome.focus(); return; }
-    if (!validade){ alert('⚠️ Informe a data de validade!'); inputValidade.focus(); return; }
-
-    // ── 1. BLOQUEIA PRODUTO VENCIDO ─────────────────────────────
-    const hoje = new Date(); hoje.setHours(0,0,0,0);
-    const dataVal = new Date(validade + 'T00:00:00');
-    if (dataVal <= hoje) {
-        alert('🚫 PRODUTO VENCIDO\n\nA data informada está vencida ou vence hoje.\nNão é permitido cadastrar. Verifique a validade!');
-        inputValidade.style.borderColor = '#dc2626';
-        inputValidade.style.boxShadow = '0 0 0 3px rgba(220,38,38,0.25)';
-        inputValidade.focus();
-        return;
-    }
-    inputValidade.style.borderColor = '';
-    inputValidade.style.boxShadow = '';
+    if (!catId) { alert('⚠️ Selecione uma classificação!'); selectCategoria.focus(); return; }
+    if (!nome)  { alert('⚠️ Informe a descrição do produto!'); inputNome.focus(); return; }
 
     if (!produtos[catId]) produtos[catId] = [];
 
-    // ── 2. DUPLICATA: mesmo nome → soma quantidade ─
-    const inputQtd = document.getElementById('input-quantidade');
-    const quantidade = parseInt(inputQtd ? inputQtd.value : '1') || 1;
-
     if (idEditando === null) {
+        // Verifica duplicata pelo nome
         const duplicado = (produtos[catId] || []).find(
             p => p.nome.trim().toLowerCase() === nome.toLowerCase()
         );
         if (duplicado) {
-            const qtdAtual = parseInt(duplicado.quantidade) || 1;
-            duplicado.quantidade = qtdAtual + quantidade;
-            salvarDados();
-            limparFormulario();
-            atualizarResumoGlobal();
-            mostrarSucessoDuplicata(qtdAtual + quantidade, duplicado.nome);
+            alert('⚠️ Produto com esse nome já está cadastrado nessa classificação.');
             return;
         }
-        produtos[catId].push({ id: Date.now(), codigo, nome, fabricante, validade, quantidade });
+        // Cadastra sem validade/quantidade — serão preenchidos na Contagem
+        produtos[catId].push({ id: Date.now(), codigo, nome, fabricante, validade: '', quantidade: 0 });
     } else {
-        // Se mudou de categoria durante edição
         const catOrigem = Object.keys(produtos).find(k => produtos[k].some(p => p.id === idEditando));
         if (catOrigem && catOrigem !== catId) {
+            const p = produtos[catOrigem].find(p => p.id === idEditando);
             produtos[catOrigem] = produtos[catOrigem].filter(p => p.id !== idEditando);
-            produtos[catId].push({ id: idEditando, codigo, nome, fabricante, validade, quantidade });
+            produtos[catId].push({ ...p, codigo, nome, fabricante });
         } else {
             const idx = produtos[catId].findIndex(p => p.id === idEditando);
             if (idx !== -1) {
-                produtos[catId][idx] = { ...produtos[catId][idx], codigo, nome, fabricante, validade, quantidade };
+                produtos[catId][idx] = { ...produtos[catId][idx], codigo, nome, fabricante };
             }
         }
         idEditando = null;
@@ -829,8 +804,6 @@ function salvarProduto() {
     salvarDados();
     limparFormulario();
     atualizarResumoGlobal();
-
-    // Feedback visual
     mostrarSucesso();
 }
 
@@ -889,18 +862,13 @@ function cancelarEdicao() {
 // ===== LIMPAR FORMULÁRIO =====
 function limparFormulario() {
     if (inputCodigo) inputCodigo.value = '';
-    inputNome.value     = '';
+    inputNome.value = '';
     if (inputFabricante) inputFabricante.value = '';
-    inputValidade.value = '';
     if (inputClassificacao) inputClassificacao.value = '';
-    const inputQtd = document.getElementById('input-quantidade');
-    if (inputQtd) inputQtd.value = 1;
-    esconderErroCampo(inputValidade, 'erro-vencido-inline');
     btnCadastrar.textContent = '✅ Cadastrar produto';
     btnCadastrar.classList.remove('btn-editando');
     document.getElementById('btn-cancelar').style.display = 'none';
     document.getElementById('banner-editando').classList.add('escondido');
-    // Re-preenche classificação com base na categoria selecionada (se houver)
     preencherClassificacao();
 }
 
@@ -1334,9 +1302,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const _inputFab      = document.getElementById('input-fabricante');
     const _inputCatNome  = document.getElementById('input-categoria-nome');
 
-    if (_inputNome)     _inputNome.addEventListener('keydown',     e => { if (e.key === 'Enter') { if (_inputFab) _inputFab.focus(); else _inputValidade.focus(); } });
-    if (_inputFab)      _inputFab.addEventListener('keydown',      e => { if (e.key === 'Enter') _inputValidade.focus(); });
-    if (_inputValidade) _inputValidade.addEventListener('keydown', e => { if (e.key === 'Enter') salvarProduto(); });
+    if (_inputNome) _inputNome.addEventListener('keydown', e => { if (e.key === 'Enter') { if (_inputFab) _inputFab.focus(); else salvarProduto(); } });
+    if (_inputFab)  _inputFab.addEventListener('keydown',  e => { if (e.key === 'Enter') salvarProduto(); });
     if (_inputValidade) _inputValidade.addEventListener('change', () => {
         const erroBanner = document.getElementById('erro-vencido');
         if (!erroBanner) return;
@@ -1557,4 +1524,146 @@ function importCancelar() {
 
 function importNovaImportacao() {
     importarResetar();
+}
+
+// ============================================
+// CONTAGEM DE PRODUTOS
+// ============================================
+
+let contagemProdutoSelecionado = null; // { catId, produto }
+
+function contagemBuscar(termo) {
+    const resultadoEl = document.getElementById('contagem-resultado-busca');
+    const formEl = document.getElementById('contagem-form');
+    termo = (termo || '').trim().toLowerCase();
+
+    if (!termo) {
+        resultadoEl.style.display = 'none';
+        formEl.style.display = 'none';
+        contagemProdutoSelecionado = null;
+        return;
+    }
+
+    // Busca em todos os produtos cadastrados
+    const resultados = [];
+    categorias.forEach(cat => {
+        (produtos[cat.id] || []).forEach(p => {
+            const nomeMatch  = p.nome.toLowerCase().includes(termo);
+            const codigoMatch = p.codigo && p.codigo.toLowerCase() === termo;
+            if (nomeMatch || codigoMatch) {
+                resultados.push({ catId: cat.id, catNome: cat.nome, produto: p });
+            }
+        });
+    });
+
+    if (resultados.length === 0) {
+        resultadoEl.innerHTML = `<p style="opacity:.6;font-size:.875rem;padding:.5rem 0">Nenhum produto encontrado. Verifique se ele está cadastrado.</p>`;
+        resultadoEl.style.display = 'block';
+        formEl.style.display = 'none';
+        return;
+    }
+
+    if (resultados.length === 1) {
+        // Seleção automática se único resultado
+        contagemSelecionarProduto(resultados[0]);
+        resultadoEl.style.display = 'none';
+        return;
+    }
+
+    // Mostra lista para o usuário escolher
+    resultadoEl.innerHTML = resultados.map((r, i) => `
+        <div onclick="contagemSelecionarProduto(contagemResultados[${i}])"
+             style="padding:.6rem .9rem;border-radius:8px;margin-bottom:.35rem;cursor:pointer;
+                    background:var(--card);border:1px solid var(--borda);
+                    transition:border-color .15s"
+             onmouseover="this.style.borderColor='var(--azul,#3b82f6)'"
+             onmouseout="this.style.borderColor='var(--borda)'">
+            <div style="font-weight:600;font-size:.9rem">${r.produto.nome}</div>
+            <div style="font-size:.78rem;opacity:.6">${r.catNome}${r.produto.fabricante ? ' · ' + r.produto.fabricante : ''}</div>
+        </div>`).join('');
+    window.contagemResultados = resultados;
+    resultadoEl.style.display = 'block';
+    formEl.style.display = 'none';
+}
+
+function contagemSelecionarProduto(item) {
+    contagemProdutoSelecionado = item;
+    const resultadoEl = document.getElementById('contagem-resultado-busca');
+    const formEl = document.getElementById('contagem-form');
+
+    document.getElementById('contagem-prod-nome').textContent = item.produto.nome;
+    document.getElementById('contagem-prod-fab').textContent =
+        (item.catNome || '') + (item.produto.fabricante ? ' · ' + item.produto.fabricante : '');
+    document.getElementById('contagem-validade').value = '';
+    document.getElementById('contagem-quantidade').value = 1;
+    document.getElementById('contagem-banner-erro').classList.add('escondido');
+
+    resultadoEl.style.display = 'none';
+    formEl.style.display = 'block';
+    document.getElementById('contagem-validade').focus();
+}
+
+function contagemLancar() {
+    if (!contagemProdutoSelecionado) return;
+    const validade  = document.getElementById('contagem-validade').value;
+    const quantidade = parseInt(document.getElementById('contagem-quantidade').value) || 1;
+    const erroBanner = document.getElementById('contagem-banner-erro');
+    const erroMsg    = document.getElementById('contagem-erro-msg');
+
+    if (!validade) {
+        erroMsg.textContent = '⚠️ Informe a data de validade.';
+        erroBanner.classList.remove('escondido');
+        document.getElementById('contagem-validade').focus();
+        return;
+    }
+
+    const hoje = new Date(); hoje.setHours(0,0,0,0);
+    const dataVal = new Date(validade + 'T00:00:00');
+    if (isNaN(dataVal.getTime()) || dataVal <= hoje) {
+        erroMsg.textContent = '🚫 Data vencida ou inválida — não é permitido lançar produto vencido.';
+        erroBanner.classList.remove('escondido');
+        document.getElementById('contagem-validade').focus();
+        return;
+    }
+    erroBanner.classList.add('escondido');
+
+    const { catId, produto } = contagemProdutoSelecionado;
+    const lista = produtos[catId] || [];
+    const idx = lista.findIndex(p => p.id === produto.id);
+
+    if (idx !== -1) {
+        // Soma quantidade se já há lançamento com mesma validade
+        const existente = lista.find(p => p.id === produto.id && p.validade === validade);
+        if (existente) {
+            existente.quantidade = (parseInt(existente.quantidade) || 0) + quantidade;
+        } else {
+            // Atualiza validade e quantidade do produto existente
+            lista[idx] = { ...lista[idx], validade, quantidade };
+        }
+    }
+
+    salvarDados();
+    atualizarResumoGlobal();
+
+    // Feedback e limpa
+    contagemCancelar();
+    const buscaEl = document.getElementById('contagem-busca');
+    if (buscaEl) buscaEl.value = '';
+
+    // Mostra badge verde de sucesso
+    const btn = document.querySelector('#aba-proxvalidade');
+    if (btn) {
+        const orig = btn.style.outline;
+        btn.style.outline = '2px solid #16a34a';
+        setTimeout(() => { btn.style.outline = orig; }, 800);
+    }
+    renderizarProxValidade();
+}
+
+function contagemCancelar() {
+    contagemProdutoSelecionado = null;
+    document.getElementById('contagem-form').style.display = 'none';
+    document.getElementById('contagem-resultado-busca').style.display = 'none';
+    const buscaEl = document.getElementById('contagem-busca');
+    if (buscaEl) { buscaEl.value = ''; buscaEl.focus(); }
 }
