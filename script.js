@@ -403,6 +403,7 @@ function mudarAba(aba) {
     if (aba === 'exportar')   renderizarGridExport();
     if (aba === 'usuarios')   renderizarTabelaUsuarios();
     if (aba === 'importar')   importarResetar();
+    if (aba === 'proxvalidade') renderizarProxValidade();
 }
 
 // ===== FILTRO DE CATEGORIAS POR SESSÃO =====
@@ -518,6 +519,123 @@ function renderizarGridCategorias() {
 
 function atualizarBadgeAbaCategorias() { /* badge removido */ }
 
+// ===== BADGE NAV — PRÓX. VALIDADE =====
+function atualizarBadgeProxValidade() {
+    let urgentes = 0;
+    categoriasDeSessao().forEach(cat => {
+        (produtos[cat.id] || []).forEach(p => {
+            if (!p.validade) return;
+            const dias = diasParaVencer(p.validade);
+            if (dias !== Infinity && dias <= 90) urgentes++;
+        });
+    });
+    const badge = document.getElementById('badge-prox-val');
+    if (!badge) return;
+    if (urgentes > 0) {
+        badge.textContent = urgentes;
+        badge.classList.remove('escondido');
+    } else {
+        badge.classList.add('escondido');
+    }
+}
+
+// ===== PRÓXIMOS A VENCER =====
+function renderizarProxValidade() {
+    // Popula filtro de categorias
+    const selCat = document.getElementById('filtro-prox-cat');
+    if (selCat) {
+        const valorAtual = selCat.value;
+        selCat.innerHTML = '<option value="">Todas as categorias</option>';
+        categoriasDeSessao().forEach(cat => {
+            const opt = document.createElement('option');
+            opt.value = cat.id;
+            opt.textContent = cat.nome;
+            selCat.appendChild(opt);
+        });
+        if (valorAtual) selCat.value = valorAtual;
+    }
+
+    const filtroFaixa = document.getElementById('filtro-prox-faixa')?.value || 'todos';
+    const filtroCat   = document.getElementById('filtro-prox-cat')?.value   || '';
+
+    // Coleta todos os produtos com validade dentro de 12 meses (ou vencidos)
+    const lista = [];
+    categoriasDeSessao().forEach(cat => {
+        if (filtroCat && cat.id != filtroCat) return;
+        (produtos[cat.id] || []).forEach(p => {
+            if (!p.validade) return;
+            const dias  = diasParaVencer(p.validade);
+            if (dias === Infinity) return;
+            const faixa = calcularFaixa(p.validade);
+            if (faixa === 'ok' && filtroFaixa !== 'ok') return; // só aparece se filtro específico
+            lista.push({ ...p, catNome: cat.nome, catId: cat.id, dias, faixa });
+        });
+    });
+
+    // Filtra por faixa
+    const listafiltrada = filtroFaixa === 'todos'
+        ? lista.filter(p => p.faixa !== 'ok')
+        : lista.filter(p => p.faixa === filtroFaixa);
+
+    // Ordena por urgência
+    listafiltrada.sort((a, b) => a.dias - b.dias);
+
+    // Resumo por faixa
+    const contadores = { vencido:0, critico:0, alerta:0, atencao:0, proximo:0 };
+    lista.filter(p => p.faixa !== 'ok').forEach(p => {
+        if (contadores[p.faixa] !== undefined) contadores[p.faixa]++;
+    });
+
+    const resumoEl = document.getElementById('proxval-resumo');
+    const faixasOrdem = ['vencido','critico','alerta','atencao','proximo'];
+    resumoEl.innerHTML = faixasOrdem.map(f => {
+        const cfg = FAIXA_CONFIG[f];
+        const n = contadores[f];
+        return `<div class="proxval-card proxval-card--${f}" onclick="document.getElementById('filtro-prox-faixa').value='${f}';renderizarProxValidade()">
+            <span class="proxval-card-num ${n > 0 ? '' : 'proxval-zero'}">${n}</span>
+            <span class="proxval-card-label">${cfg.label}</span>
+        </div>`;
+    }).join('');
+
+    // Lista de produtos
+    const listaEl = document.getElementById('proxval-lista');
+    if (listafiltrada.length === 0) {
+        listaEl.innerHTML = '<p class="lista-vazia" style="padding:2rem">✅ Nenhum produto próximo ao vencimento nos filtros selecionados.</p>';
+        return;
+    }
+
+    let html = `<div class="cabecalho-lista" style="border-radius:12px 12px 0 0">
+        <span>Categoria</span>
+        <span>Produto</span>
+        <span>Fabricante</span>
+        <span>Validade</span>
+        <span>Qtd.</span>
+        <span>Dias Rest.</span>
+        <span>Status</span>
+    </div>`;
+
+    listafiltrada.forEach(p => {
+        const cfg = FAIXA_CONFIG[p.faixa];
+        const dias = p.dias;
+        let diasTexto = '';
+        if (dias < 0)        diasTexto = `<span class="dias-texto vencido">${Math.abs(dias)}d atrás</span>`;
+        else if (dias === 0) diasTexto = `<span class="dias-texto critico">Hoje!</span>`;
+        else                 diasTexto = `<span class="dias-texto ${p.faixa}">${dias} dias</span>`;
+
+        html += `<div class="produto-item faixa-${p.faixa}">
+            <div class="produto-codigo-col" style="font-size:.8rem;opacity:.75">${p.catNome}</div>
+            <div class="produto-nome-col">${p.nome}</div>
+            <div class="produto-codigo-col" title="${p.fabricante || ''}">${p.fabricante || '<span style="opacity:.35">—</span>'}</div>
+            <div class="produto-data-col">${formatarData(p.validade)}</div>
+            <div class="produto-qtd-col"><span class="badge-qtd">${p.quantidade || 1}</span></div>
+            <div class="produto-dias-col">${diasTexto}</div>
+            <div><span class="badge ${cfg.classe}">${cfg.label}</span></div>
+        </div>`;
+    });
+
+    listaEl.innerHTML = html;
+}
+
 // ===== PAINEL DE PRODUTOS (dentro da aba Categorias) =====
 function abrirPainel(id) {
     categoriaAtual = id;
@@ -576,9 +694,10 @@ function renderizarListaPainel() {
 
         // Texto de dias restantes
         let diasTexto = '';
-        if (dias < 0)        diasTexto = `<span class="dias-texto vencido">${Math.abs(dias)}d atrás</span>`;
-        else if (dias === 0) diasTexto = `<span class="dias-texto critico">Hoje!</span>`;
-        else                 diasTexto = `<span class="dias-texto ${faixa}">${dias} dias</span>`;
+        if (dias === Infinity)    diasTexto = `<span class="dias-texto" style="opacity:.4">—</span>`;
+        else if (dias < 0)        diasTexto = `<span class="dias-texto vencido">${Math.abs(dias)}d atrás</span>`;
+        else if (dias === 0)      diasTexto = `<span class="dias-texto critico">Hoje!</span>`;
+        else                      diasTexto = `<span class="dias-texto ${faixa}">${dias} dias</span>`;
 
         const badge = `<span class="badge ${cfg.classe}">${cfg.label}</span>`;
 
@@ -896,15 +1015,18 @@ function atualizarResumoGlobal() {
     document.getElementById('g-prox6').textContent  = prox6;
     document.getElementById('g-cats').textContent   = categoriasDeSessao().length;
     atualizarBadgeAbaCategorias();
+    atualizarBadgeProxValidade();
 }
 
 // ===== UTILITÁRIOS =====
 
 // Retorna o número de dias até o vencimento (negativo = vencido)
 function diasParaVencer(dataValidade) {
+    if (!dataValidade) return Infinity;
     const hoje   = new Date();
     hoje.setHours(0,0,0,0);
     const dataVal = new Date(dataValidade + 'T00:00:00');
+    if (isNaN(dataVal.getTime())) return Infinity;
     return Math.ceil((dataVal - hoje) / (1000 * 60 * 60 * 24));
 }
 
@@ -918,7 +1040,9 @@ function diasParaVencer(dataValidade) {
   ok        → > 365 dias       → verde      (>12 meses)
 */
 function calcularFaixa(dataValidade) {
+    if (!dataValidade) return 'sem-data';
     const dias = diasParaVencer(dataValidade);
+    if (dias === Infinity) return 'sem-data';
     if (dias < 0)    return 'vencido';
     if (dias <= 90)  return 'critico';
     if (dias <= 180) return 'alerta';
@@ -936,16 +1060,21 @@ function calcularStatus(dataValidade) {
 }
 
 const FAIXA_CONFIG = {
-    vencido: { label: '✗ Vencido',       classe: 'badge-vencido',  cor: '#6b7280' },
-    critico: { label: '🔴 < 3 meses',    classe: 'badge-critico',  cor: '#dc2626' },
-    alerta:  { label: '🟠 3–6 meses',    classe: 'badge-alerta',   cor: '#ea580c' },
-    atencao: { label: '🟡 6–9 meses',    classe: 'badge-atencao',  cor: '#ca8a04' },
-    proximo: { label: '🔵 9–12 meses',   classe: 'badge-proximo',  cor: '#2563eb' },
-    ok:      { label: '🟢 > 12 meses',   classe: 'badge-ok',       cor: '#16a34a' },
+    vencido:  { label: '✗ Vencido',       classe: 'badge-vencido',  cor: '#6b7280' },
+    critico:  { label: '🔴 < 3 meses',    classe: 'badge-critico',  cor: '#dc2626' },
+    alerta:   { label: '🟠 3–6 meses',    classe: 'badge-alerta',   cor: '#ea580c' },
+    atencao:  { label: '🟡 6–9 meses',    classe: 'badge-atencao',  cor: '#ca8a04' },
+    proximo:  { label: '🔵 9–12 meses',   classe: 'badge-proximo',  cor: '#2563eb' },
+    ok:       { label: '🟢 > 12 meses',   classe: 'badge-ok',       cor: '#16a34a' },
+    'sem-data':{ label: '⬜ Sem validade', classe: 'badge-semdata',  cor: '#64748b' },
 };
 
 function formatarData(dataISO) {
-    const [ano, mes, dia] = dataISO.split('-');
+    if (!dataISO) return '<span style="opacity:.4">Sem data</span>';
+    const parts = dataISO.split('-');
+    if (parts.length !== 3) return '<span style="opacity:.4">—</span>';
+    const [ano, mes, dia] = parts;
+    if (!ano || !mes || !dia) return '<span style="opacity:.4">—</span>';
     return `${dia}/${mes}/${ano}`;
 }
 

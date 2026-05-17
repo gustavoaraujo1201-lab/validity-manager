@@ -46,13 +46,18 @@
                     <span class="aba-icone">➕</span>
                     <span>Cadastro Produtos</span>
                 </button>
-                <button class="aba aba-admin escondido" id="aba-unidade" onclick="mudarAba('unidade')">
-                    <span class="aba-icone">🏪</span>
-                    <span>Cad. Unidade</span>
+                <button class="aba" id="aba-proxvalidade" onclick="mudarAba('proxvalidade')">
+                    <span class="aba-icone">⏰</span>
+                    <span>Próx. Validade</span>
+                    <span id="badge-prox-val" class="nav-badge escondido"></span>
                 </button>
                 <button class="aba" id="aba-categorias" onclick="mudarAba('categorias')">
                     <span class="aba-icone">📂</span>
                     <span>Categorias</span>
+                </button>
+                <button class="aba aba-admin escondido" id="aba-unidade" onclick="mudarAba('unidade')">
+                    <span class="aba-icone">🏪</span>
+                    <span>Cad. Unidade</span>
                 </button>
                 <button class="aba aba-admin escondido" id="aba-importar" onclick="mudarAba('importar')">
                     <span class="aba-icone">📥</span>
@@ -163,6 +168,37 @@
                         </div>
                     </div>
 
+                </div>
+            </section>
+
+            <!-- SEÇÃO: PRÓXIMOS A VENCER -->
+            <section id="secao-proxvalidade" class="secao">
+                <div class="secao-inner">
+                    <div class="secao-titulo-row">
+                        <div>
+                            <h2>⏰ Próximos a Vencer</h2>
+                            <p>Produtos com validade nos próximos 12 meses, ordenados por urgência</p>
+                        </div>
+                        <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap">
+                            <select id="filtro-prox-faixa" onchange="renderizarProxValidade()" style="padding:.4rem .75rem;border-radius:8px;border:1px solid var(--borda);background:var(--fundo);color:var(--texto);font-size:.85rem">
+                                <option value="todos">Todas as faixas</option>
+                                <option value="critico">🔴 &lt; 3 meses</option>
+                                <option value="alerta">🟠 3–6 meses</option>
+                                <option value="atencao">🟡 6–9 meses</option>
+                                <option value="proximo">🔵 9–12 meses</option>
+                                <option value="vencido">✗ Vencidos</option>
+                            </select>
+                            <select id="filtro-prox-cat" onchange="renderizarProxValidade()" style="padding:.4rem .75rem;border-radius:8px;border:1px solid var(--borda);background:var(--fundo);color:var(--texto);font-size:.85rem">
+                                <option value="">Todas as categorias</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Cards de resumo por faixa -->
+                    <div class="proxval-resumo" id="proxval-resumo"></div>
+
+                    <!-- Lista de produtos -->
+                    <div id="proxval-lista" class="card" style="padding:0;overflow:hidden;margin-top:1rem"></div>
                 </div>
             </section>
 

@@ -1283,3 +1283,69 @@ select:focus {
     color: var(--texto, #e2e8f0);
     font-size: .875rem;
 }
+
+/* ============================================
+   BADGE NAV
+   ============================================ */
+.aba { position: relative; }
+.nav-badge {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    background: #dc2626;
+    color: #fff;
+    font-size: .65rem;
+    font-weight: 700;
+    min-width: 18px;
+    height: 18px;
+    border-radius: 9px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 4px;
+    line-height: 1;
+}
+
+/* ============================================
+   PRÓXIMOS A VENCER
+   ============================================ */
+.proxval-resumo {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: .75rem;
+    margin-bottom: .5rem;
+}
+.proxval-card {
+    background: var(--card, #1e293b);
+    border: 1px solid var(--borda, #334155);
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    cursor: pointer;
+    transition: transform .15s, border-color .15s;
+    text-align: center;
+}
+.proxval-card:hover { transform: translateY(-2px); border-color: var(--azul, #3b82f6); }
+.proxval-card--vencido  { border-left: 3px solid #6b7280; }
+.proxval-card--critico  { border-left: 3px solid #dc2626; }
+.proxval-card--alerta   { border-left: 3px solid #ea580c; }
+.proxval-card--atencao  { border-left: 3px solid #ca8a04; }
+.proxval-card--proximo  { border-left: 3px solid #2563eb; }
+.proxval-card-num {
+    display: block;
+    font-size: 1.75rem;
+    font-weight: 800;
+    line-height: 1;
+    margin-bottom: .3rem;
+}
+.proxval-card-num.proxval-zero { opacity: .3; }
+.proxval-card--vencido  .proxval-card-num { color: #9ca3af; }
+.proxval-card--critico  .proxval-card-num { color: #dc2626; }
+.proxval-card--alerta   .proxval-card-num { color: #ea580c; }
+.proxval-card--atencao  .proxval-card-num { color: #ca8a04; }
+.proxval-card--proximo  .proxval-card-num { color: #3b82f6; }
+.proxval-card-label { font-size: .78rem; opacity: .7; }
+
+.badge-semdata {
+    background: #334155;
+    color: #94a3b8;
+}
