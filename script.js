@@ -361,6 +361,8 @@ function confirmarReset() {
 const inputCodigo    = document.getElementById('input-codigo');
 const inputNome      = document.getElementById('input-nome');
 const inputValidade  = document.getElementById('input-validade');
+const inputClassificacao = document.getElementById('input-classificacao');
+const inputFabricante    = document.getElementById('input-fabricante');
 const selectCategoria = document.getElementById('select-categoria');
 const btnCadastrar   = document.getElementById('btn-cadastrar');
 const listaEl        = document.getElementById('lista-produtos');
@@ -428,6 +430,16 @@ function renderizarSelectCategorias() {
     });
     // Restaura seleção se ainda existir
     if (valorAtual) sel.value = valorAtual;
+    preencherClassificacao();
+}
+
+// Preenche automaticamente o campo Classificação com base na categoria selecionada
+function preencherClassificacao() {
+    const catId = selectCategoria.value;
+    const cat = categorias.find(c => c.id == catId);
+    if (inputClassificacao) {
+        inputClassificacao.value = cat ? cat.nome : '';
+    }
 }
 
 // ===== GRID DE CATEGORIAS (aba Categorias) =====
@@ -547,7 +559,7 @@ function renderizarListaPainel() {
 
     let html = `
         <div class="cabecalho-lista">
-            <span>Cód. Barras</span>
+            <span>Fabricante</span>
             <span>Produto</span>
             <span>Validade</span>
             <span>Qtd.</span>
@@ -572,7 +584,7 @@ function renderizarListaPainel() {
 
         html += `
             <div class="produto-item faixa-${faixa}">
-                <div class="produto-codigo-col">${produto.codigo}</div>
+                <div class="produto-codigo-col" title="${produto.fabricante || ''}">${produto.fabricante || '<span style="opacity:.35">—</span>'}</div>
                 <div class="produto-nome-col">${produto.nome}</div>
                 <div class="produto-data-col">${formatarData(produto.validade)}</div>
                 <div class="produto-qtd-col"><span class="badge-qtd">${produto.quantidade || 1}</span></div>
@@ -605,9 +617,13 @@ function editarProduto(id) {
 
     // Preenche o formulário
     selectCategoria.value   = categoriaAtual;
-    inputCodigo.value       = produto.codigo;
+    if (inputCodigo) inputCodigo.value = produto.codigo || '';
     inputNome.value         = produto.nome;
+    if (inputFabricante) inputFabricante.value = produto.fabricante || '';
     inputValidade.value     = produto.validade;
+    const _iqtd = document.getElementById('input-quantidade');
+    if (_iqtd) _iqtd.value = produto.quantidade || 1;
+    preencherClassificacao();
 
     idEditando = id;
 
@@ -633,14 +649,14 @@ function removerProduto(id) {
 
 // ===== SALVAR PRODUTO =====
 function salvarProduto() {
-    const catId    = selectCategoria.value;
-    const codigo   = inputCodigo.value.trim();
-    const nome     = inputNome.value.trim();
-    const validade = inputValidade.value;
+    const catId       = selectCategoria.value;
+    const codigo      = inputCodigo ? inputCodigo.value.trim() : '';
+    const nome        = inputNome.value.trim();
+    const fabricante  = inputFabricante ? inputFabricante.value.trim() : '';
+    const validade    = inputValidade.value;
 
     if (!catId)   { alert('⚠️ Selecione uma categoria!'); selectCategoria.focus(); return; }
-    if (!codigo)  { alert('⚠️ Informe o código de barras!'); inputCodigo.focus(); return; }
-    if (!nome)    { alert('⚠️ Informe o nome do produto!'); inputNome.focus(); return; }
+    if (!nome)    { alert('⚠️ Informe a descrição do produto!'); inputNome.focus(); return; }
     if (!validade){ alert('⚠️ Informe a data de validade!'); inputValidade.focus(); return; }
 
     // ── 1. BLOQUEIA PRODUTO VENCIDO ─────────────────────────────
@@ -658,13 +674,13 @@ function salvarProduto() {
 
     if (!produtos[catId]) produtos[catId] = [];
 
-    // ── 2. DUPLICATA: mesmo código + mesmo nome → soma quantidade ─
+    // ── 2. DUPLICATA: mesmo nome → soma quantidade ─
     const inputQtd = document.getElementById('input-quantidade');
     const quantidade = parseInt(inputQtd ? inputQtd.value : '1') || 1;
 
     if (idEditando === null) {
         const duplicado = (produtos[catId] || []).find(
-            p => p.codigo.trim() === codigo && p.nome.trim().toLowerCase() === nome.toLowerCase()
+            p => p.nome.trim().toLowerCase() === nome.toLowerCase()
         );
         if (duplicado) {
             const qtdAtual = parseInt(duplicado.quantidade) || 1;
@@ -675,17 +691,17 @@ function salvarProduto() {
             mostrarSucessoDuplicata(qtdAtual + quantidade, duplicado.nome);
             return;
         }
-        produtos[catId].push({ id: Date.now(), codigo, nome, validade, quantidade });
+        produtos[catId].push({ id: Date.now(), codigo, nome, fabricante, validade, quantidade });
     } else {
         // Se mudou de categoria durante edição
         const catOrigem = Object.keys(produtos).find(k => produtos[k].some(p => p.id === idEditando));
         if (catOrigem && catOrigem !== catId) {
             produtos[catOrigem] = produtos[catOrigem].filter(p => p.id !== idEditando);
-            produtos[catId].push({ id: idEditando, codigo, nome, validade });
+            produtos[catId].push({ id: idEditando, codigo, nome, fabricante, validade, quantidade });
         } else {
             const idx = produtos[catId].findIndex(p => p.id === idEditando);
             if (idx !== -1) {
-                produtos[catId][idx] = { id: idEditando, codigo, nome, validade };
+                produtos[catId][idx] = { ...produtos[catId][idx], codigo, nome, fabricante, validade, quantidade };
             }
         }
         idEditando = null;
@@ -753,9 +769,11 @@ function cancelarEdicao() {
 
 // ===== LIMPAR FORMULÁRIO =====
 function limparFormulario() {
-    inputCodigo.value   = '';
+    if (inputCodigo) inputCodigo.value = '';
     inputNome.value     = '';
+    if (inputFabricante) inputFabricante.value = '';
     inputValidade.value = '';
+    if (inputClassificacao) inputClassificacao.value = '';
     const inputQtd = document.getElementById('input-quantidade');
     if (inputQtd) inputQtd.value = 1;
     esconderErroCampo(inputValidade, 'erro-vencido-inline');
@@ -763,6 +781,8 @@ function limparFormulario() {
     btnCadastrar.classList.remove('btn-editando');
     document.getElementById('btn-cancelar').style.display = 'none';
     document.getElementById('banner-editando').classList.add('escondido');
+    // Re-preenche classificação com base na categoria selecionada (se houver)
+    preencherClassificacao();
 }
 
 // ===== MODAL CATEGORIA =====
@@ -1182,10 +1202,11 @@ document.addEventListener('DOMContentLoaded', function() {
     const _inputCodigo   = document.getElementById('input-codigo');
     const _inputNome     = document.getElementById('input-nome');
     const _inputValidade = document.getElementById('input-validade');
+    const _inputFab      = document.getElementById('input-fabricante');
     const _inputCatNome  = document.getElementById('input-categoria-nome');
 
-    if (_inputCodigo)   _inputCodigo.addEventListener('keydown',   e => { if (e.key === 'Enter') _inputNome.focus(); });
-    if (_inputNome)     _inputNome.addEventListener('keydown',     e => { if (e.key === 'Enter') _inputValidade.focus(); });
+    if (_inputNome)     _inputNome.addEventListener('keydown',     e => { if (e.key === 'Enter') { if (_inputFab) _inputFab.focus(); else _inputValidade.focus(); } });
+    if (_inputFab)      _inputFab.addEventListener('keydown',      e => { if (e.key === 'Enter') _inputValidade.focus(); });
     if (_inputValidade) _inputValidade.addEventListener('keydown', e => { if (e.key === 'Enter') salvarProduto(); });
     if (_inputValidade) _inputValidade.addEventListener('change', () => {
         const erroBanner = document.getElementById('erro-vencido');

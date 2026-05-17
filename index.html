@@ -81,7 +81,7 @@
                         <div class="campo-grupo full">
                             <label for="select-categoria">🗂️ Categoria</label>
                             <div class="select-wrapper">
-                                <select id="select-categoria">
+                                <select id="select-categoria" onchange="preencherClassificacao()">
                                     <option value="">— Selecione uma categoria —</option>
                                 </select>
                             </div>
@@ -90,25 +90,35 @@
                         <div class="divisor"></div>
 
                         <div class="campo-grupo full">
-                            <label for="input-codigo">🔲 Código de barras</label>
-                            <input type="text" id="input-codigo" placeholder="Bipe ou digite o código..."
-                                autocomplete="off">
+                            <label for="input-nome">📋 Descrição</label>
+                            <input type="text" id="input-nome" placeholder="Ex: DANONE YOPRO BANANA EDGE 250ML" autocomplete="off">
                         </div>
 
                         <div class="campo-grupo dois">
                             <div>
-                                <label for="input-nome">🏷️ Nome do produto</label>
-                                <input type="text" id="input-nome" placeholder="Ex: NAN Comfor 2 800g">
+                                <label for="input-classificacao">🗂️ Classificação</label>
+                                <input type="text" id="input-classificacao" placeholder="Preenchida pela categoria..." readonly style="opacity:.7;cursor:not-allowed">
                             </div>
+                            <div>
+                                <label for="input-fabricante">🏭 Fabricante</label>
+                                <input type="text" id="input-fabricante" placeholder="Ex: DANONE LTDA" autocomplete="off">
+                            </div>
+                        </div>
+
+                        <div class="campo-grupo dois">
                             <div>
                                 <label for="input-validade">📅 Data de validade</label>
                                 <input type="date" id="input-validade">
                             </div>
+                            <div>
+                                <label for="input-quantidade">🔢 Quantidade</label>
+                                <input type="number" id="input-quantidade" placeholder="Ex: 1" min="1" value="1">
+                            </div>
                         </div>
 
-                        <div class="campo-grupo full">
-                            <label for="input-quantidade">🔢 Quantidade</label>
-                            <input type="number" id="input-quantidade" placeholder="Ex: 1" min="1" value="1">
+                        <div class="campo-grupo full" style="display:none" id="campo-codigo-wrapper">
+                            <label for="input-codigo">🔲 Código de barras <small style="opacity:.5">(opcional)</small></label>
+                            <input type="text" id="input-codigo" placeholder="Bipe ou digite o código..." autocomplete="off">
                         </div>
 
                         <div class="form-acoes">
