@@ -669,6 +669,8 @@ function renderizarListaPainel() {
         document.getElementById('p-total').textContent    = 0;
         document.getElementById('p-aviso').textContent    = 0;
         document.getElementById('p-vencidos').textContent = 0;
+        const pRealVencidosVazio = document.getElementById('p-real-vencidos');
+        if (pRealVencidosVazio) pRealVencidosVazio.textContent = 0;
         return;
     }
 
@@ -719,9 +721,14 @@ function renderizarListaPainel() {
     listaEl.innerHTML = html;
 
     // Atualiza painel resumo
+    // Corrigido: "p-vencidos" estava rotulado como "Próx. 6–9m" na tela, mas
+    // somava alerta+atencao (3–9 meses). Agora mostra só a faixa 6–9m, e foi
+    // adicionado um contador separado para produtos realmente vencidos.
     document.getElementById('p-total').textContent    = lista.length;
     document.getElementById('p-aviso').textContent    = contadores.critico;
-    document.getElementById('p-vencidos').textContent = contadores.alerta + contadores.atencao;
+    document.getElementById('p-vencidos').textContent = contadores.atencao;
+    const pRealVencidos = document.getElementById('p-real-vencidos');
+    if (pRealVencidos) pRealVencidos.textContent = contadores.vencido;
     atualizarResumoGlobal();
 }
 
@@ -968,20 +975,26 @@ function excluirCategoria(id) {
 
 // ===== RESUMO GLOBAL =====
 function atualizarResumoGlobal() {
-    let total = 0, prox3 = 0, prox6 = 0;
+    // Corrigido: o card dizia "6–9 meses" mas somava tudo entre 91 e 270 dias
+    // (ou seja, 3–9 meses, misturando as faixas "alerta" e "atencao"). Agora
+    // cada card reflete exatamente o intervalo do seu próprio rótulo.
+    let total = 0, prox3 = 0, prox6a9 = 0, vencidos = 0;
     const minhascats = categoriasDeSessao();
     minhascats.forEach(cat => {
         (produtos[cat.id] || []).forEach(p => {
             total++;
             const dias = diasParaVencer(p.validade);
-            if (dias >= 0 && dias <= 90)  prox3++;  // até 3 meses
-            if (dias > 90 && dias <= 270) prox6++;  // entre 3 e 9 meses
+            if (dias < 0) vencidos++;                     // vencido
+            if (dias >= 0 && dias <= 90)  prox3++;         // até 3 meses
+            if (dias > 180 && dias <= 270) prox6a9++;      // 6–9 meses
         });
     });
     document.getElementById('g-total').textContent  = total;
     document.getElementById('g-prox3').textContent  = prox3;
-    document.getElementById('g-prox6').textContent  = prox6;
+    document.getElementById('g-prox6').textContent  = prox6a9;
     document.getElementById('g-cats').textContent   = categoriasDeSessao().length;
+    const gVencidos = document.getElementById('g-vencidos');
+    if (gVencidos) gVencidos.textContent = vencidos;
     atualizarBadgeAbaCategorias();
     atualizarBadgeProxValidade();
 }
@@ -1020,10 +1033,14 @@ function calcularFaixa(dataValidade) {
 }
 
 // Mantido para compatibilidade com renderizarGridCategorias
+// Corrigido: a faixa "atencao" (6–9 meses, amarelo) não entrava como "aviso",
+// então uma categoria só com produtos nessa faixa aparecia no grid como se
+// estivesse tudo certo (sem borda/pill de alerta), embora essa faixa já seja
+// tratada como alerta em todo o resto do sistema (aba "Próximos a vencer").
 function calcularStatus(dataValidade) {
     const faixa = calcularFaixa(dataValidade);
     if (faixa === 'vencido') return 'vencido';
-    if (faixa === 'critico' || faixa === 'alerta') return 'aviso';
+    if (faixa === 'critico' || faixa === 'alerta' || faixa === 'atencao') return 'aviso';
     return 'ok';
 }
 

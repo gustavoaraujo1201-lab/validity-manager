@@ -443,7 +443,7 @@ select:focus {
 /* ===== RESUMO GLOBAL ===== */
 .resumo-global {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(5, 1fr);
     gap: 10px;
 }
 
@@ -1342,7 +1342,7 @@ select:focus {
 .proxval-card--critico  .proxval-card-num { color: #dc2626; }
 .proxval-card--alerta   .proxval-card-num { color: #ea580c; }
 .proxval-card--atencao  .proxval-card-num { color: #ca8a04; }
-.proxval-card--proximo  .proxval-card-num { color: #3b82f6; }
+.proxval-card--proximo  .proxval-card-num { color: #2563eb; }
 .proxval-card-label { font-size: .78rem; opacity: .7; }
 
 .badge-semdata {

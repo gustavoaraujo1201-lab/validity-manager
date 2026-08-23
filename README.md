@@ -30,7 +30,7 @@ Sistema web para controle de validade de produtos, com autenticação por perfil
 
 ## 🔐 Credenciais padrão
 
-> ⚠️ **Altere o usuário e a senha padrão antes de disponibilizar o sistema para outros usuários.**
+> ⚠️ **Altere o usuário antes de disponibilizar o sistema para outros usuários.**
 
 | Campo   | Valor     |
 |---------|-----------|

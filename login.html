@@ -32,7 +32,7 @@
             -webkit-backdrop-filter: blur(18px);
             border-radius: 20px;
             padding: 2.5rem 2rem;
-            width: 500px;
+            width: 100%;
             max-width: 380px;
             border: 1px solid rgba(255, 255, 255, 0.15);
             box-shadow: 0 25px 60px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255,255,255,0.1);
@@ -246,16 +246,16 @@
         })();
 
         // ===== USUÁRIOS PADRÃO =====
+        // IMPORTANTE: só cria o admin raiz se ele não existir (localStorage vazio/corrompido).
+        // Antes, esta função sobrescrevia o admin com usuario/admin a CADA carregamento da
+        // tela de login, tornando impossível manter uma senha alterada. Corrigido.
         function inicializarUsuarios() {
             let usuarios = JSON.parse(localStorage.getItem('cv_usuarios') || '[]');
             const idxAdmin = usuarios.findIndex(u => u.id === 1);
-            const adminPadrao = { id: 1, usuario: 'Admin', senha: 'admin', perfil: 'admin' };
             if (idxAdmin === -1) {
-                usuarios.unshift(adminPadrao);
-            } else {
-                usuarios[idxAdmin] = adminPadrao;
+                usuarios.unshift({ id: 1, usuario: 'Admin', senha: 'admin', perfil: 'admin' });
+                localStorage.setItem('cv_usuarios', JSON.stringify(usuarios));
             }
-            localStorage.setItem('cv_usuarios', JSON.stringify(usuarios));
         }
 
         function fazerLogin() {
