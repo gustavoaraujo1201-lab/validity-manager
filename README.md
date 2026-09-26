@@ -63,7 +63,8 @@ O arquivo `vercel.json` aplica os seguintes headers HTTP em todas as rotas:
 | `X-XSS-Protection`          | Ativa proteção contra XSS no navegador              |
 | `Referrer-Policy`           | Limita informações enviadas ao navegar para fora     |
 | `Permissions-Policy`        | Desativa câmera, microfone, geolocalização e payment|
-| `Content-Security-Policy`   | Permite scripts apenas de `self` e `cdn.jsdelivr.net`|
+
+> ⚠️ Ainda não há `Content-Security-Policy`. O sistema usa vários `onclick="..."` inline e blocos `<script>` no corpo do HTML, então uma CSP real exigiria antes migrar esses handlers para `addEventListener` — planejado, mas não incluído nesta rodada de correções.
 
 ---
 
@@ -85,8 +86,9 @@ Todos os dados são salvos no **`localStorage`** do navegador do usuário:
 | Chave           | Conteúdo                  |
 |-----------------|---------------------------|
 | `cv_usuarios`   | Lista de usuários         |
-| `cv_categorias` | Lista de categorias       |
-| `cv_produtos`   | Produtos por categoria    |
+| `categorias`    | Lista de categorias       |
+| `produtos`      | Produtos por categoria    |
+| `cv_unidades`   | Lojas / filiais cadastradas |
 | `cv_tema`       | Preferência de tema       |
 
 A sessão ativa fica no **`sessionStorage`** (`cv_sessao`) e é apagada ao fechar o navegador.

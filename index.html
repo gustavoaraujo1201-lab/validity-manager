@@ -513,8 +513,8 @@
             lista.innerHTML = unidades.map((u, i) => `
         <div style="display:flex;align-items:center;justify-content:space-between;padding:0.75rem 0;border-bottom:1px solid var(--border-color);">
             <div>
-                <strong style="color:var(--text-primary);font-size:0.95rem">🏪 ${u.nome}</strong>
-                ${u.apelido ? `<div style="font-size:0.8rem;color:var(--text-secondary);margin-top:2px">🏷️ ${u.apelido}</div>` : ''}
+                <strong style="color:var(--text-primary);font-size:0.95rem">🏪 ${escaparHTML(u.nome)}</strong>
+                ${u.apelido ? `<div style="font-size:0.8rem;color:var(--text-secondary);margin-top:2px">🏷️ ${escaparHTML(u.apelido)}</div>` : ''}
             </div>
             <div style="display:flex;gap:6px;">
                 <button onclick="abrirModalUnidade(${i})" style="background:none;border:1px solid #2563eb;color:#2563eb;border-radius:6px;padding:4px 10px;cursor:pointer;font-size:0.78rem;">✏️ Editar</button>

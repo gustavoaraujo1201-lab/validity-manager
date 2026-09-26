@@ -1,4 +1,22 @@
 // ============================================
+// SEGURANÇA — Escape de HTML
+// ============================================
+// Dados vindos de campos do usuário (nome de produto, categoria,
+// fabricante, unidade, usuário) são inseridos via innerHTML em vários
+// pontos da tela. Sem escapar, um valor como "<img src=x onerror=...>"
+// digitado em qualquer um desses campos executaria JavaScript assim
+// que a lista fosse renderizada. Esta função neutraliza isso.
+function escaparHTML(valor) {
+    if (valor === null || valor === undefined) return '';
+    return String(valor)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
+// ============================================
 // TEMA — Claro / Escuro
 // ============================================
 
@@ -147,9 +165,9 @@ function renderizarTabelaUsuarios() {
 
         html += `
             <div class="usuario-item ${euMesmo ? 'eu' : ''}">
-                <div><strong>${u.nome || u.usuario}</strong>${badgeEu}</div>
-                <div style="color:#6b7280;font-size:0.82rem">${u.usuario}</div>
-                <div style="font-size:0.82rem;color:var(--text-secondary)">${nomeLoja}</div>
+                <div><strong>${escaparHTML(u.nome || u.usuario)}</strong>${badgeEu}</div>
+                <div style="color:#6b7280;font-size:0.82rem">${escaparHTML(u.usuario)}</div>
+                <div style="font-size:0.82rem;color:var(--text-secondary)">${escaparHTML(nomeLoja)}</div>
                 <div>${badgePerfil}</div>
                 <div><span style="color:#16a34a;font-size:0.78rem;font-weight:600">● Ativo</span></div>
                 <div>${acoes}</div>
@@ -389,7 +407,6 @@ function salvarDados() {
 }
 
 // ===== NAVEGAÇÃO POR ABAS =====
-let categoriasExportSelecionadas = new Set();
 
 function mudarAba(aba) {
     document.querySelectorAll('.aba').forEach(b => b.classList.remove('ativa'));
@@ -400,7 +417,6 @@ function mudarAba(aba) {
 
     if (aba === 'categorias') renderizarGridCategorias();
     if (aba === 'cadastro')   renderizarSelectCategorias();
-    if (aba === 'exportar')   renderizarGridExport();
     if (aba === 'usuarios')   renderizarTabelaUsuarios();
     if (aba === 'importar')   importarResetar();
     if (aba === 'proxvalidade') renderizarProxValidade();
@@ -455,7 +471,6 @@ function renderizarGridCategorias() {
 
     if (lista.length === 0) {
         grid.innerHTML = '<div class="cat-vazia">Nenhuma categoria criada ainda.</div>';
-        atualizarBadgeAbaCategorias();
         return;
     }
 
@@ -485,9 +500,9 @@ function renderizarGridCategorias() {
                     let lojaTag = '';
                     if (dono.unidadeIdx !== undefined && dono.unidadeIdx !== null) {
                         const loja = unidades[dono.unidadeIdx];
-                        if (loja) lojaTag = ` · 🏪 ${loja.nome}`;
+                        if (loja) lojaTag = ` · 🏪 ${escaparHTML(loja.nome)}`;
                     }
-                    tagDono = `<span class="cat-tag-dono">👤 ${dono.nome || dono.usuario}${lojaTag}</span>`;
+                    tagDono = `<span class="cat-tag-dono">👤 ${escaparHTML(dono.nome || dono.usuario)}${lojaTag}</span>`;
                 }
             } else {
                 tagDono = `<span class="cat-tag-dono cat-tag-sem-dono">⚠️ Sem colaborador</span>`;
@@ -497,7 +512,7 @@ function renderizarGridCategorias() {
         html += `
         <div class="${temAlerta}" onclick="abrirPainel('${cat.id}')">
             <div class="card-cat-topo">
-                <span class="card-cat-nome">${cat.nome}</span>
+                <span class="card-cat-nome">${escaparHTML(cat.nome)}</span>
                 <div class="card-cat-acoes" onclick="event.stopPropagation()">
                     <button class="btn-cat-acao" onclick="abrirModalCategoria('${cat.id}')" title="Renomear">✏️</button>
                     ${isAdmin() ? `<button class="btn-cat-acao" onclick="excluirCategoria('${cat.id}')" title="Excluir">🗑️</button>` : ''}
@@ -514,10 +529,7 @@ function renderizarGridCategorias() {
     });
 
     grid.innerHTML = html;
-    atualizarBadgeAbaCategorias();
 }
-
-function atualizarBadgeAbaCategorias() { /* badge removido */ }
 
 // ===== BADGE NAV — PRÓX. VALIDADE =====
 function atualizarBadgeProxValidade() {
@@ -623,9 +635,9 @@ function renderizarProxValidade() {
         else                 diasTexto = `<span class="dias-texto ${p.faixa}">${dias} dias</span>`;
 
         html += `<div class="produto-item faixa-${p.faixa}">
-            <div class="produto-codigo-col" style="font-size:.8rem;opacity:.75">${p.catNome}</div>
-            <div class="produto-nome-col">${p.nome}</div>
-            <div class="produto-codigo-col" title="${p.fabricante || ''}">${p.fabricante || '<span style="opacity:.35">—</span>'}</div>
+            <div class="produto-codigo-col" style="font-size:.8rem;opacity:.75">${escaparHTML(p.catNome)}</div>
+            <div class="produto-nome-col">${escaparHTML(p.nome)}</div>
+            <div class="produto-codigo-col" title="${escaparHTML(p.fabricante || '')}">${p.fabricante ? escaparHTML(p.fabricante) : '<span style="opacity:.35">—</span>'}</div>
             <div class="produto-data-col">${formatarData(p.validade)}</div>
             <div class="produto-qtd-col"><span class="badge-qtd">${p.quantidade || 1}</span></div>
             <div class="produto-dias-col">${diasTexto}</div>
@@ -705,8 +717,8 @@ function renderizarListaPainel() {
 
         html += `
             <div class="produto-item faixa-${faixa}">
-                <div class="produto-codigo-col" title="${produto.fabricante || ''}">${produto.fabricante || '<span style="opacity:.35">—</span>'}</div>
-                <div class="produto-nome-col">${produto.nome}</div>
+                <div class="produto-codigo-col" title="${escaparHTML(produto.fabricante || '')}">${produto.fabricante ? escaparHTML(produto.fabricante) : '<span style="opacity:.35">—</span>'}</div>
+                <div class="produto-nome-col">${escaparHTML(produto.nome)}</div>
                 <div class="produto-data-col">${formatarData(produto.validade)}</div>
                 <div class="produto-qtd-col"><span class="badge-qtd">${produto.quantidade || 1}</span></div>
                 <div class="produto-dias-col">${diasTexto}</div>
@@ -995,7 +1007,6 @@ function atualizarResumoGlobal() {
     document.getElementById('g-cats').textContent   = categoriasDeSessao().length;
     const gVencidos = document.getElementById('g-vencidos');
     if (gVencidos) gVencidos.textContent = vencidos;
-    atualizarBadgeAbaCategorias();
     atualizarBadgeProxValidade();
 }
 
@@ -1061,96 +1072,6 @@ function formatarData(dataISO) {
     const [ano, mes, dia] = parts;
     if (!ano || !mes || !dia) return '<span style="opacity:.4">—</span>';
     return `${dia}/${mes}/${ano}`;
-}
-
-// ===== GRID DE EXPORTAÇÃO =====
-function renderizarGridExport() {
-    const grid = document.getElementById('export-grid-cats');
-    categoriasExportSelecionadas = new Set();
-    atualizarBarraSel();
-
-    if (categorias.length === 0) {
-        grid.innerHTML = '<p class="lista-vazia">Nenhuma categoria cadastrada ainda.</p>';
-        return;
-    }
-
-    let html = '';
-    categorias.forEach(cat => {
-        const lista    = produtos[cat.id] || [];
-        const total    = lista.length;
-        let aviso = 0, vencidos = 0;
-        lista.forEach(p => {
-            const f = calcularFaixa(p.validade);
-            if (f === 'critico' || f === 'alerta' || f === 'atencao') aviso++;
-            if (f === 'vencido') vencidos++;
-        });
-
-        html += `
-        <div class="export-cat-card" id="expcard-${cat.id}" onclick="toggleSelecaoExport('${cat.id}')">
-            <div class="export-cat-check" id="expcheck-${cat.id}">
-                <span class="check-box">☐</span>
-            </div>
-            <div class="export-cat-info">
-                <div class="export-cat-nome">${cat.nome}</div>
-                <div class="export-cat-stats">
-                    <span>${total} produto${total !== 1 ? 's' : ''}</span>
-                    ${vencidos > 0 ? `<span class="pill pill-vencido">${vencidos} vencido${vencidos > 1 ? 's' : ''}</span>` : ''}
-                    ${aviso > 0    ? `<span class="pill pill-aviso">${aviso} em alerta</span>` : ''}
-                </div>
-            </div>
-            <button class="btn-export-rapido" onclick="event.stopPropagation(); exportarExcel('categoria-id', '${cat.id}')"
-                title="Exportar só esta categoria">
-                📊 Exportar
-            </button>
-        </div>`;
-    });
-
-    grid.innerHTML = html;
-}
-
-function toggleSelecaoExport(id) {
-    const card  = document.getElementById('expcard-' + id);
-    const check = document.getElementById('expcheck-' + id).querySelector('.check-box');
-
-    if (categoriasExportSelecionadas.has(id)) {
-        categoriasExportSelecionadas.delete(id);
-        card.classList.remove('selecionado');
-        check.textContent = '☐';
-    } else {
-        categoriasExportSelecionadas.add(id);
-        card.classList.add('selecionado');
-        check.textContent = '☑';
-    }
-    atualizarBarraSel();
-}
-
-function atualizarBarraSel() {
-    const barra = document.getElementById('export-barra-sel');
-    const qtd   = document.getElementById('export-qtd-sel');
-    const n = categoriasExportSelecionadas.size;
-    if (n > 0) {
-        barra.classList.remove('escondido');
-        qtd.textContent = n;
-    } else {
-        barra.classList.add('escondido');
-    }
-}
-
-function limparSelecaoExport() {
-    categoriasExportSelecionadas.forEach(id => {
-        const card  = document.getElementById('expcard-' + id);
-        const check = document.getElementById('expcheck-' + id);
-        if (card)  card.classList.remove('selecionado');
-        if (check) check.querySelector('.check-box').textContent = '☐';
-    });
-    categoriasExportSelecionadas = new Set();
-    atualizarBarraSel();
-}
-
-function exportarSelecionadas() {
-    if (categoriasExportSelecionadas.size === 0) return;
-    const ids = [...categoriasExportSelecionadas];
-    exportarExcel('selecao', null, ids);
 }
 
 // ===== EXPORTAR PARA EXCEL =====
@@ -1434,7 +1355,7 @@ function importRenderizarMapeamento() {
     lista.innerHTML = '';
 
     const opcoesSelect = categorias.map(c =>
-        `<option value="${c.id}">${c.nome}</option>`
+        `<option value="${c.id}">${escaparHTML(c.nome)}</option>`
     ).join('');
 
     importClassificacoes.forEach(cls => {
@@ -1449,12 +1370,12 @@ function importRenderizarMapeamento() {
         row.className = 'import-map-row';
         row.innerHTML = `
             <div class="import-map-cls">
-                <span class="import-map-label">${cls}</span>
+                <span class="import-map-label">${escaparHTML(cls)}</span>
                 <span class="import-map-qtd">${qtd} produto${qtd !== 1 ? 's' : ''}</span>
             </div>
             <div class="import-map-arrow">→</div>
             <div class="import-map-dest">
-                <select class="import-cat-select" data-cls="${cls.replace(/"/g,'&quot;')}">
+                <select class="import-cat-select" data-cls="${escaparHTML(cls)}">
                     <option value="">— ignorar —</option>
                     ${opcoesSelect}
                 </select>
@@ -1524,7 +1445,7 @@ function importConfirmar() {
     if (Object.keys(porCategoria).length) {
         relatorio += '<ul style="margin:.75rem 0 0;padding-left:1.25rem">';
         Object.entries(porCategoria).forEach(([cat, n]) => {
-            relatorio += `<li>${cat}: <strong>${n}</strong> produto(s)</li>`;
+            relatorio += `<li>${escaparHTML(cat)}: <strong>${n}</strong> produto(s)</li>`;
         });
         relatorio += '</ul>';
     }
@@ -1595,8 +1516,8 @@ function contagemBuscar(termo) {
                     transition:border-color .15s"
              onmouseover="this.style.borderColor='var(--azul,#3b82f6)'"
              onmouseout="this.style.borderColor='var(--borda)'">
-            <div style="font-weight:600;font-size:.9rem">${r.produto.nome}</div>
-            <div style="font-size:.78rem;opacity:.6">${r.catNome}${r.produto.fabricante ? ' · ' + r.produto.fabricante : ''}</div>
+            <div style="font-weight:600;font-size:.9rem">${escaparHTML(r.produto.nome)}</div>
+            <div style="font-size:.78rem;opacity:.6">${escaparHTML(r.catNome)}${r.produto.fabricante ? ' · ' + escaparHTML(r.produto.fabricante) : ''}</div>
         </div>`).join('');
     window.contagemResultados = resultados;
     resultadoEl.style.display = 'block';
