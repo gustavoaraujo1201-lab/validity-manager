@@ -1217,18 +1217,18 @@ select option {
    ============================================ */
 
 .import-dropzone {
-    border: 2px dashed var(--borda, #334155);
+    border: 2px dashed var(--border-color);
     border-radius: 12px;
     padding: 3rem 2rem;
     text-align: center;
     cursor: pointer;
     transition: border-color .2s, background .2s;
-    background: var(--card, #1e293b);
+    background: var(--bg-card);
     margin-bottom: 1.5rem;
 }
 .import-dropzone:hover,
 .import-dropzone--over {
-    border-color: var(--azul, #3b82f6);
+    border-color: var(--text-aba-ativa);
     background: rgba(59,130,246,.06);
 }
 .import-dropzone-icon {
@@ -1254,7 +1254,7 @@ select option {
     align-items: center;
     gap: .75rem;
     padding: .65rem 0;
-    border-bottom: 1px solid var(--borda, #334155);
+    border-bottom: 1px solid var(--border-color);
     flex-wrap: wrap;
 }
 .import-map-row:last-child { border-bottom: none; }
@@ -1286,9 +1286,9 @@ select option {
     width: 100%;
     padding: .45rem .75rem;
     border-radius: 8px;
-    border: 1px solid var(--borda, #334155);
-    background: var(--fundo, #0f172a);
-    color: var(--texto, #e2e8f0);
+    border: 1px solid var(--border-color);
+    background: var(--bg-input);
+    color: var(--select-color);
     font-size: .875rem;
 }
 
@@ -1324,15 +1324,15 @@ select option {
     margin-bottom: .5rem;
 }
 .proxval-card {
-    background: var(--card, #1e293b);
-    border: 1px solid var(--borda, #334155);
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
     border-radius: 12px;
     padding: 1rem 1.25rem;
     cursor: pointer;
     transition: transform .15s, border-color .15s;
     text-align: center;
 }
-.proxval-card:hover { transform: translateY(-2px); border-color: var(--azul, #3b82f6); }
+.proxval-card:hover { transform: translateY(-2px); border-color: var(--text-aba-ativa); }
 .proxval-card--vencido  { border-left: 3px solid #6b7280; }
 .proxval-card--critico  { border-left: 3px solid #dc2626; }
 .proxval-card--alerta   { border-left: 3px solid #ea580c; }
